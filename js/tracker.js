@@ -78,18 +78,27 @@ const Tracker = (() => {
 
   function initPresets() {
     const form = document.getElementById('preset-form');
+    const groupSelect = form.elements.group;
     const select = form.elements.preset;
     const info = document.getElementById('preset-info');
 
-    select.append(el('option', { value: '', text: 'プリセットを選択' }));
-    const groups = new Map();
-    for (const p of PRESETS) {
-      if (!groups.has(p.group)) {
-        groups.set(p.group, el('optgroup', { label: p.group }));
-        select.append(groups.get(p.group));
-      }
-      groups.get(p.group).append(el('option', { value: p.id, text: p.name }));
-    }
+    // 1段目: コンテンツ、2段目: そのコンテンツのプリセット
+    const groups = [...new Set(PRESETS.map((p) => p.group))];
+    groupSelect.append(
+      el('option', { value: '', text: 'コンテンツを選択' }),
+      ...groups.map((g) => el('option', { value: g, text: g })),
+    );
+
+    groupSelect.addEventListener('change', () => {
+      const items = PRESETS.filter((p) => p.group === groupSelect.value);
+      select.replaceChildren(
+        el('option', { value: '', text: items.length ? 'プリセットを選択' : '先にコンテンツを選択' }),
+        ...items.map((p) => el('option', { value: p.id, text: p.name })),
+      );
+      select.disabled = items.length === 0;
+      info.replaceChildren();
+    });
+    groupSelect.dispatchEvent(new Event('change'));
 
     select.addEventListener('change', () => {
       const p = PRESETS.find((x) => x.id === select.value);
