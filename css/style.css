@@ -96,7 +96,9 @@ button.link {
   text-underline-offset: 3px;
 }
 
-#preset-form select { flex: 1 1 260px; min-width: 0; }
+#preset-form select { min-width: 0; }
+#preset-form select[name="group"] { flex: 1 1 180px; }
+#preset-form select[name="preset"] { flex: 2 1 260px; }
 .count-label { display: flex; align-items: center; gap: 4px; }
 #preset-form .count-label input { width: 70px; }
 #preset-info a { color: var(--accent); }
