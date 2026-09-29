@@ -47,9 +47,33 @@ const Tracker = (() => {
       commit();
     });
 
+    migrateMaterialNames();
     initPresets();
     addReqRow();
     render();
+  }
+
+  // 仮の名前で登録済みの素材を正式名称に置き換える。同名の素材がすでにあれば1つにまとめる
+  function migrateMaterialNames() {
+    let changed = false;
+    for (const m of [...app.state.materials]) {
+      const to = PRESET_RENAMES[m.name];
+      if (!to) continue;
+      const existing = app.state.materials.find((x) => x.name === to);
+      if (existing) {
+        existing.owned += m.owned;
+        existing.perRun = existing.perRun || m.perRun;
+        for (const t of app.state.targets) {
+          for (const r of t.reqs) if (r.materialId === m.id) r.materialId = existing.id;
+          t.reqs = mergeReqs(t.reqs);
+        }
+        app.state.materials = app.state.materials.filter((x) => x !== m);
+      } else {
+        m.name = to;
+      }
+      changed = true;
+    }
+    if (changed) app.save();
   }
 
   function initPresets() {
