@@ -26,22 +26,25 @@ const Spark = (() => {
     const s = app.state.spark;
     const box = document.getElementById('spark-result');
     const now = Math.floor(s.crystals / CRYSTALS_PER_DRAW) + s.singles + s.tens * 10 + s.sparks;
-    const remaining = Math.max(0, CEILING - now);
-    const pct = Math.min(100, (now / CEILING) * 100);
+    const sparkCount = Math.floor(now / CEILING); // 天井何回分か
+    const progress = now % CEILING;               // 次の天井に向けて貯まっている連数
+    const remaining = CEILING - progress;
+    // 端数の宝晶石も使って、あと何個あれば次の天井か
+    const needCrystals = remaining * CRYSTALS_PER_DRAW - (s.crystals % CRYSTALS_PER_DRAW);
 
     const children = [
       el('h2', { text: '現在' }),
-      el('p', { class: 'big' }, [`${formatNum(now)} 連分`, el('small', { text: ` / ${CEILING}` })]),
-      el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${pct}%` })),
+      el('p', { class: 'big' }, [`${formatNum(now)} 連分`]),
+      el('p', { class: sparkCount > 0 ? 'good' : '' }, [
+        '天井 ',
+        el('strong', { class: 'spark-count', text: formatNum(sparkCount) }),
+        ` 回分${sparkCount > 0 && progress > 0 ? `（＋${formatNum(progress)} 連）` : ''}`,
+      ]),
+      el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${(progress / CEILING) * 100}%` })),
+      el('p', {
+        text: `${sparkCount > 0 ? `${sparkCount + 1} 回目の天井` : '天井'}まで あと ${formatNum(remaining)} 連（宝晶石 ${formatNum(needCrystals)} 個）`,
+      }),
     ];
-
-    if (remaining === 0) {
-      children.push(el('p', { class: 'good', text: `天井に届いています！（${formatNum(now - CEILING)} 連分の余裕）` }));
-    } else {
-      // 端数の宝晶石も使って、あと何個あれば天井か
-      const needCrystals = remaining * CRYSTALS_PER_DRAW - (s.crystals % CRYSTALS_PER_DRAW);
-      children.push(el('p', { text: `あと ${formatNum(remaining)} 連（宝晶石 ${formatNum(needCrystals)} 個）` }));
-    }
 
     children.push(el('p', { class: 'hint', text: '宝晶石300個=1連、10連チケット=10連で計算しています。' }));
 
