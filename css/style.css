@@ -125,7 +125,6 @@ details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 .inline-form input[name="name"] { flex: 1 1 200px; }
 .inline-form input[type="number"] { width: 160px; }
 
-#target-form > input[name="name"] { width: 100%; margin-bottom: 8px; }
 .req-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .req-row select { flex: 1; min-width: 0; }
 .req-row input { width: 90px; }
