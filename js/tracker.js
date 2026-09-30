@@ -54,18 +54,21 @@ const Tracker = (() => {
     document.getElementById('target-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const form = e.target;
-      const name = form.elements.name.value.trim();
       const reqs = [...document.querySelectorAll('#req-rows .req-row')]
         .map((row) => ({
           materialId: row.querySelector('select').value,
           qty: toNum(row.querySelector('input').value),
         }))
         .filter((r) => r.materialId && r.qty > 0);
-      if (!name || reqs.length === 0) {
-        alert('目標名と、1つ以上の素材（個数1以上）を入力してください');
+      if (reqs.length === 0) {
+        alert('素材を1つ以上（個数1以上）選んでください');
         return;
       }
-      app.state.targets.push({ id: uid(), name, done: false, reqs: mergeReqs(reqs) });
+      const merged = mergeReqs(reqs);
+      // 目標名は素材から自動で付ける（例:「ヒヒイロカネ ほか2種」）
+      const first = findMaterial(merged[0].materialId).name;
+      const name = merged.length > 1 ? `${first} ほか${merged.length - 1}種` : first;
+      app.state.targets.push({ id: uid(), name, done: false, reqs: merged });
       form.reset();
       document.getElementById('req-rows').replaceChildren();
       addReqRow();
