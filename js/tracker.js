@@ -79,24 +79,41 @@ const Tracker = (() => {
   function initPresets() {
     const form = document.getElementById('preset-form');
     const groupSelect = form.elements.group;
+    const subSelect = form.elements.sub;
     const select = form.elements.preset;
     const info = document.getElementById('preset-info');
 
-    // 1段目: コンテンツ、2段目: そのコンテンツのプリセット
+    // コンテンツ → (キャラ名など。sub があるコンテンツのみ) → プリセット
     const groups = [...new Set(PRESETS.map((p) => p.group))];
     groupSelect.append(
       el('option', { value: '', text: 'コンテンツを選択' }),
       ...groups.map((g) => el('option', { value: g, text: g })),
     );
 
-    groupSelect.addEventListener('change', () => {
-      const items = PRESETS.filter((p) => p.group === groupSelect.value);
+    function fillPresets(items, emptyText) {
       select.replaceChildren(
-        el('option', { value: '', text: items.length ? 'プリセットを選択' : '先にコンテンツを選択' }),
+        el('option', { value: '', text: items.length ? 'プリセットを選択' : emptyText }),
         ...items.map((p) => el('option', { value: p.id, text: p.name })),
       );
       select.disabled = items.length === 0;
       info.replaceChildren();
+    }
+
+    groupSelect.addEventListener('change', () => {
+      const items = PRESETS.filter((p) => p.group === groupSelect.value);
+      const subs = [...new Set(items.map((p) => p.sub).filter(Boolean))];
+      subSelect.hidden = subs.length === 0;
+      subSelect.replaceChildren(
+        el('option', { value: '', text: 'キャラを選択' }),
+        ...subs.map((s) => el('option', { value: s, text: s })),
+      );
+      if (subs.length) fillPresets([], '先にキャラを選択');
+      else fillPresets(items, '先にコンテンツを選択');
+    });
+
+    subSelect.addEventListener('change', () => {
+      const items = PRESETS.filter((p) => p.group === groupSelect.value && p.sub === subSelect.value);
+      fillPresets(items, '先にキャラを選択');
     });
     groupSelect.dispatchEvent(new Event('change'));
 
@@ -133,7 +150,7 @@ const Tracker = (() => {
     });
     app.state.targets.push({
       id: uid(),
-      name: count > 1 ? `${preset.name} ×${count}` : preset.name,
+      name: count > 1 ? `${presetLabel(preset)} ×${count}` : presetLabel(preset),
       done: false,
       reqs: mergeReqs(reqs),
     });
@@ -222,10 +239,25 @@ const Tracker = (() => {
       const step = (d) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
 
       tbody.append(el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
-        el('td', {}, el('button', {
-          type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
-          onclick: () => renameMaterial(m),
-        })),
+        el('td', {}, el('div', { class: 'mat-name' }, [
+          el('span', { class: 'icon-wrap' }, [
+            el('button', {
+              type: 'button', class: 'icon-button',
+              title: m.icon ? 'クリックで画像を変更' : 'クリックで画像を登録',
+              'aria-label': `${m.name}の画像を${m.icon ? '変更' : '登録'}`,
+              onclick: () => setMaterialIcon(m),
+            }, MaterialIcon.create(m)),
+            m.icon ? el('button', {
+              type: 'button', class: 'icon-remove', text: '✕',
+              title: '画像を外す', 'aria-label': `${m.name}の画像を外す`,
+              onclick: () => removeMaterialIcon(m),
+            }) : null,
+          ]),
+          el('button', {
+            type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
+            onclick: () => renameMaterial(m),
+          }),
+        ])),
         el('td', {}, el('div', { class: 'stepper' }, [
           el('button', { type: 'button', class: 'icon', text: '−', onclick: step(-1) }),
           ownedInput,
@@ -241,6 +273,32 @@ const Tracker = (() => {
         })),
       ]));
     }
+  }
+
+  async function setMaterialIcon(m) {
+    const file = await MaterialIcon.pickFile();
+    if (!file) return;
+    let icon;
+    try {
+      icon = await MaterialIcon.fileToIcon(file);
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+    const prev = m.icon;
+    m.icon = icon;
+    if (!app.save()) {
+      m.icon = prev;
+      alert('保存容量が足りないため、画像を登録できませんでした。使っていない素材の画像を外してから試してください。');
+      return;
+    }
+    render();
+  }
+
+  function removeMaterialIcon(m) {
+    if (!confirm(`「${m.name}」の画像を外しますか？`)) return;
+    delete m.icon;
+    commit();
   }
 
   function renameMaterial(m) {
@@ -282,10 +340,12 @@ const Tracker = (() => {
         const m = findMaterial(r.materialId);
         const owned = m?.owned || 0;
         const enough = t.done || owned >= r.qty;
-        return el('li', { class: enough ? 'ok' : 'short' },
+        return el('li', { class: enough ? 'ok' : 'short' }, [
+          m ? MaterialIcon.create(m, 20) : null,
           t.done
             ? `${m?.name ?? '(削除済み)'} × ${formatNum(r.qty)}`
-            : `${m?.name ?? '(削除済み)'}  ${formatNum(Math.min(owned, r.qty))} / ${formatNum(r.qty)}`);
+            : `${m?.name ?? '(削除済み)'}  ${formatNum(Math.min(owned, r.qty))} / ${formatNum(r.qty)}`,
+        ]);
       });
 
       const buttons = t.done

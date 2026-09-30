@@ -4,7 +4,7 @@ const AppStorage = (() => {
 
   function defaults() {
     return {
-      materials: [], // { id, name, owned, perRun }
+      materials: [], // { id, name, owned, perRun, icon?: 画像の data URL }
       targets: [],   // { id, name, done, reqs: [{ materialId, qty }] }
       spark: { crystals: 0, singles: 0, tens: 0, sparks: 0, daily: 0, extra: 0, date: '' },
     };
@@ -33,8 +33,10 @@ const AppStorage = (() => {
   function save(state) {
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
+      return true;
     } catch (e) {
       console.warn('保存に失敗しました', e);
+      return false;
     }
   }
 
