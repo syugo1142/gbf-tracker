@@ -1,4 +1,5 @@
 // 目標のプリセット（必要素材データ）
+// group → sub（任意。十天衆のキャラ名など）→ name の順に選ぶ。目標名は presetLabel() で作る
 // 出典はすべて GameWith（2026-09-29 取得）。各プリセットの source に記事の URL を入れている。
 // ゲームのアップデートで変わることがあるので、ゲーム内の表示も確認すること。
 // 素材名は記事の表記に合わせ、表記ゆれ（「槍エレ」「ダマ骸晶」など）は正式名称にそろえている。
@@ -10,6 +11,12 @@ const PRESETS = (() => {
   const GENE = { 火: 'ファイア・ジーン', 水: 'アクア・ジーン', 土: 'アース・ジーン', 風: 'ウィンド・ジーン', 光: 'ホーリー・ジーン', 闇: 'ダーク・ジーン' };
   const SCALE = { 火: '赤竜鱗', 水: '青竜鱗', 土: '地竜鱗', 風: '風竜鱗', 光: '白竜鱗', 闇: '黒竜鱗' };
   const req = (name, qty) => ({ name, qty });
+  // 複数のプリセットの必要素材を素材名ごとに合計する（最初に出てきた順）
+  function sumReqs(list) {
+    const map = new Map();
+    for (const p of list) for (const r of p.reqs) map.set(r.name, (map.get(r.name) || 0) + r.qty);
+    return [...map].map(([name, qty]) => req(name, qty));
+  }
   const presets = [];
 
   // ---------- 十天衆 最終上限解放 ----------
@@ -34,31 +41,34 @@ const PRESETS = (() => {
     return [req(`共闘素材の書（${element}）`, 30)];
   }
 
-  presets.push({
-    id: 'tenten-yorishiro6',
-    group: '十天衆 最終上限解放',
-    name: '赤・青・黄・緑・白・黒の依代 作成（6種）',
-    source: FINAL_SRC,
-    note: '別途、各属性の3凸Lv75の朽ちた武器が必要',
-    reqs: [
-      ...ELEMENTS.map((e) => req(`${e}の宝珠`, 250)),
-      ...ELEMENTS.map((e) => req(GENE[e], 250)),
-      req('星晶の欠片', 1500),
-    ],
-  });
-
   for (const c of TENTEN) {
     presets.push({
       id: `tenten-${c.name}-silver`,
-      group: '十天衆 最終上限解放',
-      name: `${c.name}：銀の依代 最終解放`,
+      group: '十天衆',
+      sub: c.name,
+      name: '最終：銀の依代 最終解放',
       source: FINAL_SRC,
       reqs: [req(`${c.weapon}のエレメント`, 300), ...ELEMENTS.map((e) => req(`${e}晶のエレメント`, 300))],
     });
+    // 黄金の依代の材料になる依代6種。中身は全キャラ共通
+    presets.push({
+      id: `tenten-${c.name}-yorishiro6`,
+      group: '十天衆',
+      sub: c.name,
+      name: '最終：依代6種 作成（赤・青・黄・緑・白・黒）',
+      source: FINAL_SRC,
+      note: '別途、各属性の3凸Lv75の朽ちた武器が必要',
+      reqs: [
+        ...ELEMENTS.map((e) => req(`${e}の宝珠`, 250)),
+        ...ELEMENTS.map((e) => req(GENE[e], 250)),
+        req('星晶の欠片', 1500),
+      ],
+    });
     presets.push({
       id: `tenten-${c.name}-gold`,
-      group: '十天衆 最終上限解放',
-      name: `${c.name}：黄金の依代 作成`,
+      group: '十天衆',
+      sub: c.name,
+      name: '最終：黄金の依代 作成',
       source: FINAL_SRC,
       reqs: [
         req('赤の依代', 1), req('青の依代', 1), req('黄の依代', 1),
@@ -73,8 +83,9 @@ const PRESETS = (() => {
     });
     presets.push({
       id: `tenten-${c.name}-final`,
-      group: '十天衆 最終上限解放',
-      name: `${c.name}：最終上限解放`,
+      group: '十天衆',
+      sub: c.name,
+      name: '最終：最終上限解放',
       source: FINAL_SRC,
       reqs: [
         req(`輝き（${c.element}）`, 30),
@@ -83,6 +94,17 @@ const PRESETS = (() => {
         ...bookReqs(c.element),
         req('虹星晶', 100),
       ],
+    });
+    presets.push({
+      id: `tenten-${c.name}-final-all`,
+      group: '十天衆',
+      sub: c.name,
+      name: '最終：全段階まとめて',
+      source: FINAL_SRC,
+      note: '銀の依代・依代6種・黄金の依代・最終上限解放の合計。依代6種は材料で数えている。別途、各属性の3凸Lv75の朽ちた武器が必要',
+      // 赤〜黒の依代は「依代6種 作成」の材料で数えるので、完成品としては数えない
+      reqs: sumReqs(presets.filter((p) => p.sub === c.name && p.id.startsWith('tenten-')))
+        .filter((r) => !/^[赤青黄緑白黒]の依代$/.test(r.name)),
     });
   }
 
@@ -169,13 +191,23 @@ const PRESETS = (() => {
     for (const [lv, items] of Object.entries(TRANSCEND[c.name])) {
       presets.push({
         id: `transcend-${c.name}-${lv}`,
-        group: '十天衆 限界超越',
-        name: `${c.name}：Lv${lv}解放`,
+        group: '十天衆',
+        sub: c.name,
+        name: `限界超越：Lv${lv}解放`,
         source: GW + '246381',
         note: STAGE_NOTE[lv],
         reqs: items.map(([name, qty]) => req(name, qty)),
       });
     }
+    presets.push({
+      id: `transcend-${c.name}-all`,
+      group: '十天衆',
+      sub: c.name,
+      name: '限界超越：全段階まとめて（Lv110〜150）',
+      source: GW + '246381',
+      note: 'Lv110〜150の合計（Lv110は専用トレジャー交換分を含む、Lv150は「雄偉者たちの矜持」の交換素材で計上）',
+      reqs: sumReqs(presets.filter((p) => p.sub === c.name && p.id.startsWith('transcend-'))),
+    });
   }
 
   // ---------- 天司武器 4凸 ----------
@@ -289,3 +321,8 @@ const PRESET_RENAMES = (() => {
   }
   return map;
 })();
+
+// 目標に付ける名前（キャラ名などの sub があれば「ウーノ：最終：銀の依代 最終解放」のように前に付ける）
+function presetLabel(p) {
+  return p.sub ? `${p.sub}：${p.name}` : p.name;
+}

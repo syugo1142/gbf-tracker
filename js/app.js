@@ -1,7 +1,7 @@
 // アプリ全体: 状態の保持、タブ切り替え、バックアップ
 const app = {
   state: AppStorage.load(),
-  save() { AppStorage.save(this.state); },
+  save() { return AppStorage.save(this.state); },
 };
 
 // タブ切り替え（最後に開いたタブを覚えておく）

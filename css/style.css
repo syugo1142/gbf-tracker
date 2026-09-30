@@ -10,6 +10,13 @@
   --bad: #c9362b;
   --good-bg: #e6f5ec;
   --bad-bg: #fbeaea;
+  --el-fire: #d9483b;
+  --el-water: #2f7fd9;
+  --el-earth: #b0782a;
+  --el-wind: #2e9e5b;
+  --el-light: #c9a21a;
+  --el-dark: #7b4fc4;
+  --el-none: #7a8294;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +31,13 @@
     --bad: #f07a70;
     --good-bg: #1c3327;
     --bad-bg: #3a2222;
+    --el-fire: #e0685c;
+    --el-water: #4f97e8;
+    --el-earth: #c48f45;
+    --el-wind: #45b574;
+    --el-light: #d4b340;
+    --el-dark: #9570d6;
+    --el-none: #6b7385;
   }
 }
 
@@ -98,6 +112,8 @@ button.link {
 
 #preset-form select { min-width: 0; }
 #preset-form select[name="group"] { flex: 1 1 180px; }
+#preset-form select[name="sub"] { flex: 1 1 120px; }
+#preset-form select[hidden] { display: none; }
 #preset-form select[name="preset"] { flex: 2 1 260px; }
 .count-label { display: flex; align-items: center; gap: 4px; }
 #preset-form .count-label input { width: 70px; }
@@ -156,3 +172,49 @@ input.num { width: 80px; }
   cursor: pointer;
   background: var(--card);
 }
+
+/* 素材アイコン */
+.mat-name { display: flex; align-items: center; gap: 8px; }
+.mat-icon {
+  --size: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 6px;
+  overflow: hidden;
+  color: #fff;
+  font-size: calc(var(--size) * 0.5);
+  font-weight: bold;
+  line-height: 1;
+  vertical-align: middle;
+  background: var(--el-none);
+}
+.mat-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mat-icon:has(img) { background: var(--bg); border: 1px solid var(--border); }
+.el-fire { background: var(--el-fire); }
+.el-water { background: var(--el-water); }
+.el-earth { background: var(--el-earth); }
+.el-wind { background: var(--el-wind); }
+.el-light { background: var(--el-light); }
+.el-dark { background: var(--el-dark); }
+
+.icon-wrap { position: relative; display: inline-flex; }
+.icon-button { padding: 0; border: none; background: none; border-radius: 6px; }
+.icon-button:hover .mat-icon, .icon-button:focus-visible .mat-icon { outline: 2px solid var(--accent); outline-offset: 1px; }
+.icon-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--muted);
+  background: var(--card);
+}
+.target li .mat-icon { margin-right: 6px; }
