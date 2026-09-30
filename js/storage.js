@@ -6,7 +6,7 @@ const AppStorage = (() => {
     return {
       materials: [], // { id, name, owned, perRun, icon?: 画像の data URL }
       targets: [],   // { id, name, done, reqs: [{ materialId, qty }] }
-      spark: { crystals: 0, singles: 0, tens: 0, sparks: 0, daily: 0, extra: 0, date: '' },
+      spark: { crystals: 0, singles: 0, tens: 0, sparks: 0 },
     };
   }
 
@@ -16,7 +16,8 @@ const AppStorage = (() => {
     return {
       materials: Array.isArray(data?.materials) ? data.materials : d.materials,
       targets: Array.isArray(data?.targets) ? data.targets : d.targets,
-      spark: { ...d.spark, ...(data?.spark || {}) },
+      // 以前の版にあった daily / extra / date は読み込まない
+      spark: Object.fromEntries(Object.keys(d.spark).map((k) => [k, data?.spark?.[k] ?? d.spark[k]])),
     };
   }
 

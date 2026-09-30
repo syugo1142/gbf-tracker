@@ -2,6 +2,31 @@
 const Tracker = (() => {
   let app; // { state, save }
 
+  // 開いている目標などの ID。再描画しても開閉状態を保つため、この閲覧者のブラウザに覚えておく
+  const OPEN_KEY = 'gbf-tools-open';
+  const openIds = new Set(loadOpenIds());
+
+  function loadOpenIds() {
+    try {
+      return JSON.parse(localStorage.getItem(OPEN_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setOpen(id, open) {
+    if (open) openIds.add(id);
+    else openIds.delete(id);
+    try { localStorage.setItem(OPEN_KEY, JSON.stringify([...openIds])); } catch {}
+  }
+
+  // 開閉状態を覚える <details> を作る
+  function details(id, props, children) {
+    const node = el('details', { ...props, open: openIds.has(id) }, children);
+    node.addEventListener('toggle', () => setOpen(id, node.open));
+    return node;
+  }
+
   function init(appRef) {
     app = appRef;
 
@@ -46,6 +71,17 @@ const Tracker = (() => {
       addReqRow();
       commit();
     });
+
+    const all = document.getElementById('all-materials');
+    all.open = openIds.has('all-materials');
+    all.addEventListener('toggle', () => setOpen('all-materials', all.open));
+
+    const toggleTargets = (open) => {
+      for (const t of app.state.targets) setOpen(t.id, open);
+      render();
+    };
+    document.getElementById('open-all').addEventListener('click', () => toggleTargets(true));
+    document.getElementById('close-all').addEventListener('click', () => toggleTargets(false));
 
     migrateMaterialNames();
     initPresets();
@@ -99,21 +135,23 @@ const Tracker = (() => {
       info.replaceChildren();
     }
 
+    let subLabel = '';
     groupSelect.addEventListener('change', () => {
       const items = PRESETS.filter((p) => p.group === groupSelect.value);
       const subs = [...new Set(items.map((p) => p.sub).filter(Boolean))];
+      subLabel = groupSelect.value === '十天衆' ? 'キャラ' : '武器';
       subSelect.hidden = subs.length === 0;
       subSelect.replaceChildren(
-        el('option', { value: '', text: 'キャラを選択' }),
+        el('option', { value: '', text: `${subLabel}を選択` }),
         ...subs.map((s) => el('option', { value: s, text: s })),
       );
-      if (subs.length) fillPresets([], '先にキャラを選択');
+      if (subs.length) fillPresets([], `先に${subLabel}を選択`);
       else fillPresets(items, '先にコンテンツを選択');
     });
 
     subSelect.addEventListener('change', () => {
       const items = PRESETS.filter((p) => p.group === groupSelect.value && p.sub === subSelect.value);
-      fillPresets(items, '先にキャラを選択');
+      fillPresets(items, `先に${subLabel}を選択`);
     });
     groupSelect.dispatchEvent(new Event('change'));
 
@@ -219,60 +257,69 @@ const Tracker = (() => {
     tbody.replaceChildren();
 
     if (app.state.materials.length === 0) {
-      tbody.append(el('tr', {}, el('td', { colSpan: 7, class: 'empty', text: 'まだ素材がありません。上のフォームから追加してください。' })));
+      tbody.append(el('tr', {}, el('td', { colSpan: 7, class: 'empty', text: 'まだ素材がありません。' })));
       return;
     }
-
     for (const m of app.state.materials) {
-      const need = totals.get(m.id) || 0;
-      const short = Math.max(0, need - m.owned);
-      const runs = short === 0 ? '—' : m.perRun > 0 ? `約${formatNum(Math.ceil(short / m.perRun))}周` : '—';
-
-      const ownedInput = el('input', {
-        type: 'number', min: '0', value: m.owned, class: 'num',
-        onchange: (e) => { m.owned = toNum(e.target.value); commit(); },
-      });
-      const perRunInput = el('input', {
-        type: 'number', min: '0', step: '0.01', value: m.perRun || '', class: 'num',
-        onchange: (e) => { m.perRun = toNum(e.target.value); commit(); },
-      });
-      const step = (d) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
-
-      tbody.append(el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
-        el('td', {}, el('div', { class: 'mat-name' }, [
-          el('span', { class: 'icon-wrap' }, [
-            el('button', {
-              type: 'button', class: 'icon-button',
-              title: m.icon ? 'クリックで画像を変更' : 'クリックで画像を登録',
-              'aria-label': `${m.name}の画像を${m.icon ? '変更' : '登録'}`,
-              onclick: () => setMaterialIcon(m),
-            }, MaterialIcon.create(m)),
-            m.icon ? el('button', {
-              type: 'button', class: 'icon-remove', text: '✕',
-              title: '画像を外す', 'aria-label': `${m.name}の画像を外す`,
-              onclick: () => removeMaterialIcon(m),
-            }) : null,
-          ]),
-          el('button', {
-            type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
-            onclick: () => renameMaterial(m),
-          }),
-        ])),
-        el('td', {}, el('div', { class: 'stepper' }, [
-          el('button', { type: 'button', class: 'icon', text: '−', onclick: step(-1) }),
-          ownedInput,
-          el('button', { type: 'button', class: 'icon', text: '+', onclick: step(1) }),
-        ])),
-        el('td', { text: formatNum(need) }),
-        el('td', { class: 'short-cell', text: short > 0 ? formatNum(short) : '0' }),
-        el('td', {}, perRunInput),
-        el('td', { text: runs }),
-        el('td', {}, el('button', {
-          type: 'button', class: 'icon danger', text: '削除',
-          onclick: () => deleteMaterial(m),
-        })),
-      ]));
+      tbody.append(materialRow(m, totals.get(m.id) || 0, { deletable: true }));
     }
+  }
+
+  // 素材1行分。全素材の合計表と、各目標の中の表で使う
+  function materialRow(m, need, { deletable = false, sharedWith = [] } = {}) {
+    const short = Math.max(0, need - m.owned);
+    const runs = short === 0 ? '—' : m.perRun > 0 ? `約${formatNum(Math.ceil(short / m.perRun))}周` : '—';
+
+    const ownedInput = el('input', {
+      type: 'number', min: '0', value: m.owned, class: 'num',
+      'aria-label': `${m.name}の所持数`,
+      onchange: (e) => { m.owned = toNum(e.target.value); commit(); },
+    });
+    const perRunInput = el('input', {
+      type: 'number', min: '0', step: '0.01', value: m.perRun || '', class: 'num',
+      'aria-label': `${m.name}の1周あたり平均ドロップ`,
+      onchange: (e) => { m.perRun = toNum(e.target.value); commit(); },
+    });
+    const step = (d) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
+
+    return el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
+      el('td', {}, el('div', { class: 'mat-name' }, [
+        el('span', { class: 'icon-wrap' }, [
+          el('button', {
+            type: 'button', class: 'icon-button',
+            title: m.icon ? 'クリックで画像を変更' : 'クリックで画像を登録',
+            'aria-label': `${m.name}の画像を${m.icon ? '変更' : '登録'}`,
+            onclick: () => setMaterialIcon(m),
+          }, MaterialIcon.create(m)),
+          m.icon ? el('button', {
+            type: 'button', class: 'icon-remove', text: '✕',
+            title: '画像を外す', 'aria-label': `${m.name}の画像を外す`,
+            onclick: () => removeMaterialIcon(m),
+          }) : null,
+        ]),
+        el('button', {
+          type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
+          onclick: () => renameMaterial(m),
+        }),
+        sharedWith.length ? el('span', {
+          class: 'badge shared', text: '共通',
+          title: `ほかの目標でも使用: ${sharedWith.join('、')}`,
+        }) : null,
+      ])),
+      el('td', {}, el('div', { class: 'stepper' }, [
+        el('button', { type: 'button', class: 'icon', text: '−', 'aria-label': `${m.name}を1減らす`, onclick: step(-1) }),
+        ownedInput,
+        el('button', { type: 'button', class: 'icon', text: '+', 'aria-label': `${m.name}を1増やす`, onclick: step(1) }),
+      ])),
+      el('td', { text: formatNum(need) }),
+      el('td', { class: 'short-cell', text: short > 0 ? formatNum(short) : '0' }),
+      el('td', {}, perRunInput),
+      el('td', { text: runs }),
+      deletable ? el('td', {}, el('button', {
+        type: 'button', class: 'icon danger', text: '削除',
+        onclick: () => deleteMaterial(m),
+      })) : null,
+    ]);
   }
 
   async function setMaterialIcon(m) {
@@ -328,47 +375,91 @@ const Tracker = (() => {
     list.replaceChildren();
 
     if (app.state.targets.length === 0) {
-      list.append(el('p', { class: 'empty', text: 'まだ目標がありません。' }));
+      list.append(el('p', { class: 'empty', text: 'まだ目標がありません。上のフォームから追加してください。' }));
       return;
     }
 
-    // 未完了を先に表示
-    const sorted = [...app.state.targets].sort((a, b) => a.done - b.done);
-    for (const t of sorted) {
-      const ready = t.reqs.every((r) => (findMaterial(r.materialId)?.owned || 0) >= r.qty);
-      const items = t.reqs.map((r) => {
-        const m = findMaterial(r.materialId);
-        const owned = m?.owned || 0;
-        const enough = t.done || owned >= r.qty;
-        return el('li', { class: enough ? 'ok' : 'short' }, [
-          m ? MaterialIcon.create(m, 20) : null,
-          t.done
-            ? `${m?.name ?? '(削除済み)'} × ${formatNum(r.qty)}`
-            : `${m?.name ?? '(削除済み)'}  ${formatNum(Math.min(owned, r.qty))} / ${formatNum(r.qty)}`,
-        ]);
-      });
+    const active = app.state.targets.filter((t) => !t.done);
+    const done = app.state.targets.filter((t) => t.done);
+    for (const t of active) list.append(targetCard(t, active));
+    if (active.length === 0) list.append(el('p', { class: 'empty', text: '未完了の目標はありません。' }));
 
-      const buttons = t.done
-        ? [el('button', { type: 'button', text: '未完了に戻す', onclick: () => undoTarget(t) })]
-        : [el('button', {
-            type: 'button', text: '完了（素材を消費）', disabled: !ready,
-            title: ready ? '' : '素材が足りていません',
-            onclick: () => completeTarget(t),
-          })];
-      buttons.push(
-        el('button', { type: 'button', text: '複製', onclick: () => duplicateTarget(t) }),
-        el('button', { type: 'button', class: 'danger', text: '削除', onclick: () => deleteTarget(t) }),
-      );
-
-      list.append(el('div', { class: `target ${t.done ? 'done' : ready ? 'ready' : ''}` }, [
-        el('div', { class: 'target-head' }, [
-          el('strong', { text: t.name }),
-          el('span', { class: 'badge', text: t.done ? '完了' : ready ? '素材そろった！' : '収集中' }),
-        ]),
-        el('ul', {}, items),
-        el('div', { class: 'row-buttons' }, buttons),
+    if (done.length) {
+      list.append(details('done-list', { class: 'done-list' }, [
+        el('summary', { text: `完了済み（${done.length}件）` }),
+        ...done.map((t) => targetCard(t, active)),
       ]));
     }
+  }
+
+  // 素材ごとの達成率の平均（ルピのように桁が大きい素材があっても偏らないように）
+  function progressOf(t) {
+    if (t.reqs.length === 0) return { ratio: 1, readyCount: 0 };
+    let sum = 0;
+    let readyCount = 0;
+    for (const r of t.reqs) {
+      const owned = findMaterial(r.materialId)?.owned || 0;
+      sum += Math.min(1, owned / r.qty);
+      if (owned >= r.qty) readyCount++;
+    }
+    return { ratio: sum / t.reqs.length, readyCount };
+  }
+
+  function targetCard(t, active) {
+    const { ratio, readyCount } = progressOf(t);
+    const ready = readyCount === t.reqs.length;
+    const status = t.done ? '完了' : ready ? '素材そろった！' : `${readyCount}/${t.reqs.length}種そろった`;
+
+    const summary = el('summary', {}, [
+      el('div', { class: 'target-head' }, [
+        el('strong', { text: t.name }),
+        el('span', { class: 'badge', text: status }),
+      ]),
+      t.done ? null : el('div', { class: 'bar small' }, el('div', { class: 'bar-fill', style: `width:${ratio * 100}%` })),
+    ]);
+
+    let body;
+    if (t.done) {
+      // 完了済みは使った素材を一覧で表示するだけ
+      body = el('ul', { class: 'done-items' }, t.reqs.map((r) => {
+        const m = findMaterial(r.materialId);
+        return el('li', {}, [m ? MaterialIcon.create(m, 20) : null, `${m?.name ?? '(削除済み)'} × ${formatNum(r.qty)}`]);
+      }));
+    } else {
+      const rows = t.reqs.map((r) => {
+        const m = findMaterial(r.materialId);
+        if (!m) return null;
+        const sharedWith = active
+          .filter((o) => o !== t && o.reqs.some((x) => x.materialId === m.id))
+          .map((o) => o.name);
+        return materialRow(m, r.qty, { sharedWith });
+      });
+      body = el('div', { class: 'table-wrap' }, el('table', { class: 'target-table' }, [
+        el('thead', {}, el('tr', {}, ['素材', '所持', '必要', '不足', '1周平均', '目安周回'].map((h) => el('th', { text: h })))),
+        el('tbody', {}, rows),
+      ]));
+    }
+
+    const buttons = t.done
+      ? [el('button', { type: 'button', text: '未完了に戻す', onclick: () => undoTarget(t) })]
+      : [el('button', {
+          type: 'button', text: '完了（素材を消費）', disabled: !ready,
+          title: ready ? '' : '素材が足りていません',
+          onclick: () => completeTarget(t),
+        })];
+    buttons.push(
+      el('button', { type: 'button', text: '複製', onclick: () => duplicateTarget(t) }),
+      el('button', { type: 'button', class: 'danger', text: '削除', onclick: () => deleteTarget(t) }),
+    );
+
+    return details(t.id, { class: `target ${t.done ? 'done' : ready ? 'ready' : ''}` }, [
+      summary,
+      el('div', { class: 'target-body' }, [
+        body,
+        t.done ? null : el('p', { class: 'hint', text: '「共通」の素材はほかの目標でも使います。合計の不足は下の「全素材の合計」で確認できます。' }),
+        el('div', { class: 'row-buttons' }, buttons),
+      ]),
+    ]);
   }
 
   function completeTarget(t) {
@@ -404,6 +495,7 @@ const Tracker = (() => {
   function deleteTarget(t) {
     if (!confirm(`「${t.name}」を削除しますか？（所持数は変わりません）`)) return;
     app.state.targets = app.state.targets.filter((x) => x.id !== t.id);
+    setOpen(t.id, false);
     commit();
   }
 
