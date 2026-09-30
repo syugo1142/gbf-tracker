@@ -298,6 +298,90 @@ const PRESETS = (() => {
     });
   }
 
+  // ---------- レヴァンスウェポン ----------
+  // 覚醒Lvは専用トレジャー1個=経験値20。Lv1→15 は1500(75個)、Lv15→20 は9000(450個)
+  // 特殊強化の専用トレジャーは、同じグループ(火風光 / 水土闇)の3ボス分が必要。武器の属性のものは200個、残り2つは80個
+  const REVANS_BOSS = {
+    火: { boss: 'ムゲン', treasure: '滅尽の残気', group: ['火', '風', '光'] },
+    風: { boss: 'シエテ', treasure: '星海の刃屑', group: ['火', '風', '光'] },
+    光: { boss: 'コスモス', treasure: '調停の裂布', group: ['火', '風', '光'] },
+    水: { boss: 'ディアスポラ', treasure: '機神の基板', group: ['水', '土', '闇'] },
+    土: { boss: 'ジークフリート', treasure: '滅竜の赫刃', group: ['水', '土', '闇'] },
+    闇: { boss: 'アガスティア', treasure: '壊祖の紋装甲', group: ['水', '土', '闇'] },
+  };
+  // 4凸のブライト。光/闇は2属性に分かれる
+  const BRIGHT = {
+    火: [['イグニスブライト', 10]],
+    水: [['アクアブライト', 10]],
+    土: [['テラブライト', 10]],
+    風: [['ウェントスブライト', 10]],
+    光: [['イグニスブライト', 5], ['ウェントスブライト', 5]],
+    闇: [['アクアブライト', 5], ['テラブライト', 5]],
+  };
+  const DRAGON_UNIQUE = { 火: 'イグナイトラブル', 水: 'アビサルトラジェディー', 土: 'インシュラーコア', 風: 'ゲイルロック', 光: '靂輪', 闇: 'トーデストリープ' };
+  const REVANS = [
+    { name: '滅尽剣', element: '火', weapon: '剣' },
+    { name: '必滅弓', element: '火', weapon: '弓' },
+    { name: 'シュレディンガー', element: '水', weapon: '刀' },
+    { name: 'ラグランジュ', element: '水', weapon: '格闘' },
+    { name: '竜伐の剛牙', element: '土', weapon: '短剣' },
+    { name: '竜伐の撃爪', element: '土', weapon: '斧' },
+    { name: 'セッテ・ディ・スパーダ', element: '風', weapon: '剣' },
+    { name: 'ビエント・ディ・スパーダ', element: '風', weapon: '斧' },
+    { name: 'シンメトリア', element: '光', weapon: '刀' },
+    { name: 'コンコルディア', element: '光', weapon: '短剣' },
+    { name: 'フォービドゥンアガスティ', element: '闇', weapon: '杖' },
+    { name: 'フォーセイクンアガスティ', element: '闇', weapon: '楽器' },
+  ];
+  const REVANS_SRC = GW + '411851';
+  for (const w of REVANS) {
+    const { boss, treasure, group } = REVANS_BOSS[w.element];
+    const sub = `${w.name}（${w.element}・${boss}）`;
+    const stages = [
+      {
+        key: '4', name: '4凸',
+        reqs: [
+          req(`${w.weapon}のエレメント`, 200),
+          req(`${w.element}晶のエレメント`, 200),
+          ...BRIGHT[w.element].map(([n, q]) => req(n, q)),
+          req(treasure, 50),
+        ],
+      },
+      { key: 'awake15', name: '覚醒Lv1→15', reqs: [req(treasure, 75)] },
+      {
+        key: 'rebuild', name: '特殊強化（リビルド）',
+        note: '覚醒Lvの上限が20に、奥義効果も強化される',
+        reqs: [
+          req(`${w.weapon}のエレメント`, 500),
+          req(`${w.element}晶のエレメント`, 500),
+          req(DRAGON_UNIQUE[w.element], 50),
+          ...group.map((e) => req(REVANS_BOSS[e].treasure, e === w.element ? 200 : 80)),
+        ],
+      },
+      { key: 'awake20', name: '覚醒Lv15→20', note: '特殊強化（リビルド）後に強化できる', reqs: [req(treasure, 450)] },
+    ];
+    for (const st of stages) {
+      presets.push({
+        id: `revans-${w.name}-${st.key}`,
+        group: 'レヴァンスウェポン',
+        sub,
+        name: st.name,
+        source: REVANS_SRC,
+        note: st.note,
+        reqs: st.reqs,
+      });
+    }
+    presets.push({
+      id: `revans-${w.name}-all`,
+      group: 'レヴァンスウェポン',
+      sub,
+      name: '全段階まとめて',
+      source: REVANS_SRC,
+      note: '4凸・覚醒Lv15・特殊強化・覚醒Lv20の合計',
+      reqs: sumReqs(stages),
+    });
+  }
+
   return presets;
 })();
 

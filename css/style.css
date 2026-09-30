@@ -144,14 +144,46 @@ input.num { width: 80px; }
 
 .empty, .hint { color: var(--muted); font-size: .9rem; }
 
-#target-list { margin-top: 16px; display: grid; gap: 12px; }
-.target { border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
-.target.ready { border-color: var(--good); background: var(--good-bg); }
-.target.done { opacity: .6; }
+#target-list { margin-top: 8px; display: grid; gap: 8px; }
+.list-tools { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.list-tools button { font-size: .85rem; padding: 4px 10px; }
+
+/* 目標カード（折りたたみ） */
+.target { margin: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.target > summary {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--text);
+  list-style: none;
+}
+.target > summary::-webkit-details-marker { display: none; }
+.target > summary .target-head strong::before {
+  content: '▸';
+  display: inline-block;
+  width: 1em;
+  color: var(--muted);
+  transition: transform .15s;
+}
+.target[open] > summary .target-head strong::before { transform: rotate(90deg); }
+.target-body { padding: 0 12px 12px; border-top: 1px solid var(--border); }
+.target.ready { border-color: var(--good); }
+.target.ready > summary { background: var(--good-bg); border-radius: 8px; }
+.target.done { opacity: .7; }
 .target-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.target ul { margin: 8px 0; padding-left: 20px; }
-.target li.short { color: var(--bad); }
-.target li.ok { color: var(--good); }
+.bar.small { height: 6px; margin: 8px 0 0; }
+.target-table { margin-top: 8px; }
+.done-items { margin: 8px 0; padding-left: 4px; list-style: none; }
+.done-items li { margin: 4px 0; }
+.done-list { margin-top: 8px; }
+.done-list > summary { margin-bottom: 8px; }
+.done-list .target { margin-bottom: 8px; }
+.badge.shared { color: var(--accent); border-color: var(--accent); cursor: help; }
+
+/* 全素材の合計（折りたたみカード） */
+details.card { margin-top: 0; }
+details.card > summary { margin: 0; color: var(--text); }
+details.card > summary h2 { display: inline; margin: 0; }
+details.card[open] > summary { margin-bottom: 12px; }
 .badge { font-size: .8rem; border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
 
 .grid-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
@@ -217,4 +249,4 @@ input.num { width: 80px; }
   color: var(--muted);
   background: var(--card);
 }
-.target li .mat-icon { margin-right: 6px; }
+.done-items .mat-icon { margin-right: 6px; }
