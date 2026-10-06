@@ -526,6 +526,228 @@ const PRESETS = (() => {
     });
   }
 
+  // ---------- 天星器（十天衆加入） ----------
+  // 出典: GameWith「十天衆素材の効率よい集め方」(23094)。素材は変更先の属性で決まり、キャラ（武器種）では変わらない
+  // 第1段階の真化は属性に関係なく光属性の素材を使う
+  const HIGH_ORB = { 火: '紅蓮の宝珠', 水: '霧氷の宝珠', 土: '大地の宝珠', 風: '竜巻の宝珠', 光: '煌光の宝珠', 闇: '冥闇の宝珠' };
+  const TOME = { 火: '赤の書', 水: '青の書', 土: '茶の書', 風: '緑の書', 光: '白の書', 闇: '黒の書' };
+  const SCROLL = { 火: '紅蓮の巻', 水: '霧氷の巻', 土: '大地の巻', 風: '竜巻の巻', 光: '天光の巻', 闇: '冥闇の巻' };
+  const ISLAND = { 火: 'コロッサス', 水: 'リヴァイアサン', 土: 'ユグドラシル', 風: 'ティアマト', 光: 'シュヴァリエ', 闇: 'セレスト' };
+  const MAGNA_MAT = { 火: 'プロミネンスリアクター', 水: '海神の扇尾', 土: '創樹の花蕾', 風: '嵐竜の琥珀眼', 光: 'プライマルビット', 闇: '黒霧の結晶' };
+  const TRUE_ANIMA = (e) => `真なる${e}のアニマ`;
+  const REVENANT_SRC = GW + '23094';
+  for (const e of ELEMENTS) {
+    const sub = `${e}属性に変更`;
+    const stages = [
+      {
+        key: '1', name: '第1段階：真化',
+        note: '天星器を3凸Lv100にしておく。素材は変更先に関係なく光属性',
+        reqs: [req('煌光の宝珠', 50), req('天光の巻', 50), req('ホーリー・ジーン', 50), req('白竜鱗', 50), req('栄光の証', 50), req('宝晶石', 100)],
+      },
+      {
+        key: '2', name: '第2段階：属性変更（依代武器の作成込み）',
+        note: '別途、天星器と同じ武器種の朽ち果てた武器（3凸・Lv最大）が1本必要。天星器のスキルLvを10にしておく',
+        reqs: [req(ORB[e], 250), req(GENE[e], 250), req('星晶の欠片', 250), req(TRUE_ANIMA(e), 3)],
+      },
+      {
+        key: '3', name: '第3段階：設備拡充（初回のみ）',
+        note: '1回行えば、2本目以降の天星器では不要',
+        reqs: [
+          req('マインゴーシュ', 1), req('風精の鉤爪槍', 1), req('虹魚鱗飾', 1), req('火精の権杖', 1), req('水精の牧杖', 1),
+          req('クリムゾンアックス', 1), req('土精の蛇行剣', 1), req('クラッシュハンド', 1), req('シャインバレル', 1),
+          req('シャインナックル', 1), req('シャドウスピア', 1), req('シャドウワンド', 1), req('インペリアルショテル', 1),
+          req('スパイククラブ', 1), req('ミスラのアニマ', 5), req('ルピ', 200000),
+        ],
+      },
+      {
+        key: '4', name: '第4段階',
+        reqs: [
+          req('柔らかい羽', 300), req('原初の砂', 100), req('固い土', 100), req(ORB[e], 100), req(TOME[e], 100),
+          req(SCROLL[e], 150), req(GENE[e], 100), req('覇者の証', 10), req('碧空の結晶', 3), req('宝晶石', 100),
+        ],
+      },
+      {
+        key: '5', name: '第5段階',
+        reqs: [
+          req('清らかな水', 100), req('紅黄石', 100), req('虚ろなる魄', 100), req(ORB[e], 150), req(TOME[e], 150),
+          req(GENE[e], 150), req(SCALE[e], 30), req('虹星晶', 50), req(TRUE_ANIMA(e), 3), req('碧空の結晶', 5), req('宝晶石', 200),
+        ],
+      },
+      {
+        key: '6', name: '第6段階',
+        reqs: [
+          req('風伯の羽', 300), req('鷹の羽', 100), req('予見の双葉', 80), req(ORB[e], 200), req(HIGH_ORB[e], 100),
+          req(GENE[e], 200), req(`${ISLAND[e]}のアニマ`, 100), req('覇者の証', 10), req('碧空の結晶', 7), req('宝晶石', 300),
+        ],
+      },
+      {
+        key: '7', name: '第7段階',
+        reqs: [
+          req('渦琥珀', 100), req('ラクリモサ', 100), req('オルディネシュタイン', 80), req(ORB[e], 250), req(GENE[e], 250),
+          req(SCALE[e], 50), req('虹星晶', 150), req(TRUE_ANIMA(e), 3), req('碧空の結晶', 10), req('宝晶石', 400),
+        ],
+      },
+      {
+        key: '8', name: '第8段階',
+        reqs: [
+          ...ELEMENTS.map((x) => req(MAGNA_MAT[x], x === e ? 80 : 20)),
+          req('古代布', 100), req('覇者の証', 10), req('碧空の結晶', 15), req('宝晶石', 500),
+        ],
+      },
+      {
+        key: '9', name: '第9段階（十天衆加入）',
+        note: '完了後、武器に対応した十天衆のフェイトエピソードをクリアすると加入',
+        reqs: [...ELEMENTS.map((x) => req(TRUE_ANIMA(x), 3)), req('虹星晶', 250), req('碧空の結晶', 30), req('ヒヒイロカネ', 1), req('宝晶石', 500)],
+      },
+    ];
+    for (const st of stages) {
+      presets.push({ id: `revenant-${e}-${st.key}`, group: '天星器（十天衆加入）', sub, name: st.name, source: REVENANT_SRC, note: st.note, reqs: st.reqs });
+    }
+    presets.push({
+      id: `revenant-${e}-all`, group: '天星器（十天衆加入）', sub, name: '全段階まとめて（初回：設備拡充込み）',
+      source: REVENANT_SRC, note: '別途、朽ち果てた武器（3凸）1本が必要', reqs: sumReqs(stages),
+    });
+    presets.push({
+      id: `revenant-${e}-all-2nd`, group: '天星器（十天衆加入）', sub, name: '全段階まとめて（2人目以降：設備拡充なし）',
+      source: REVENANT_SRC, note: '別途、朽ち果てた武器（3凸）1本が必要', reqs: sumReqs(stages.filter((st) => st.key !== '3')),
+    });
+  }
+
+  // ---------- 十賢者（アーカルム） ----------
+  // 出典: GameWith の各アーカルム召喚石の記事、十賢者の加入(144770)・最終(390463)・限界超越(537602)、新世界の礎武器の各記事
+  // 光（ザ・スター）は火/風、闇（デス）は水/土の素材を半分ずつ使う
+  const SAGES = [
+    { sage: 'アラナン', stone: 'ザ・サン', element: '火', idea: '太陽', frag: 'アクイラ', grande: '修行者の覚書', weapon: 'ヒート・オブ・ザ・サン', stonePage: '81834', weaponPage: '245167' },
+    { sage: 'フラウ', stone: 'ザ・デビル', element: '火', idea: '悪魔', frag: 'アクイラ', grande: 'レムペッパー', weapon: 'キス・オブ・ザ・デビル', stonePage: '81836', weaponPage: '245168' },
+    { sage: 'マリア・テレサ', stone: 'ジャスティス', element: '水', idea: '正義', frag: 'ベラトール', grande: 'トキシックフラワー', weapon: 'ライズ・オブ・ジャスティス', stonePage: '81844', weaponPage: '245166' },
+    { sage: 'ハーゼリーラ', stone: 'ザ・ムーン', element: '水', idea: '月', frag: 'ベラトール', grande: '透き通るような絹', weapon: 'リフレクト・オブ・ザ・ムーン', stonePage: '81835', weaponPage: '245170' },
+    { sage: 'カイム', stone: 'ザ・ハングドマン', element: '土', idea: '刑死者', frag: 'アクイラ', grande: 'ベスティエフルーツ', weapon: 'タイ・オブ・ザ・ハングドマン', stonePage: '81837', weaponPage: '245171' },
+    { sage: 'ロベリア', stone: 'ザ・タワー', element: '土', idea: '塔', frag: 'ケルサス', grande: '割れたティーカップ', weapon: 'クラッシュ・オブ・ザ・タワー', stonePage: '81841', weaponPage: '245165' },
+    { sage: 'カッツェリーラ', stone: 'ジャッジメント', element: '風', idea: '審判', frag: 'ベラトール', grande: '埃まみれの書物', weapon: 'メロディ・オブ・ジャッジメント', stonePage: '81838', weaponPage: '245172' },
+    { sage: 'エスタリオラ', stone: 'テンペランス', element: '風', idea: '節制', frag: 'ケルサス', grande: 'クルーガーハープ', weapon: 'プレイ・オブ・テンペランス', stonePage: '81842', weaponPage: '245169' },
+    { sage: 'ガイゼンボーガ', stone: 'ザ・スター', element: '光', idea: '星', frag: 'ケルサス', grande: '錆びついた掛瓦', weapon: 'ショット・オブ・ザ・スター', stonePage: '81840', weaponPage: '245162' },
+    { sage: 'ニーア', stone: 'デス', element: '闇', idea: '死神', frag: 'ケルサス', grande: '巨獣骨', weapon: 'ペイン・オブ・デス', stonePage: '81843', weaponPage: '245164' },
+  ];
+  // 光/闇が半分ずつ使う属性
+  const SPLIT = { 光: ['火', '風'], 闇: ['水', '土'] };
+  const OLD_ANIMA = { 火: 'フラム＝グラス', 水: 'マキュラ・マリウス', 土: 'メドゥーサ', 風: 'ナタク', 光: 'アポロン', 闇: 'オリヴィエ' };
+  const NEW_ANIMA = { 火: 'アテナ', 水: 'グラニ', 土: 'バアル', 風: 'ガルーダ', 光: 'オーディン', 闇: 'リッチ' };
+  const SERAPH = { 火: 'ミカエル', 水: 'ガブリエル', 土: 'ウリエル', 風: 'ラファエル' };
+  const SHOWDOWN = { 火: '灼滅の焔角', 水: '氷獄の結晶', 土: '裁考の水晶', 風: '人馬の円盤', 光: '妃光の水晶', 闇: '幻魔の破片' };
+  const SHARD = { 火: '業火の石片', 水: '玉水の石片', 土: '荒土の石片', 風: '狂風の石片' };
+  const BRIGHT_NAME = { 火: 'イグニス・ブライト', 水: 'アクア・ブライト', 土: 'テラ・ブライト', 風: 'ウェントス・ブライト' };
+  const GOSPEL = { 火: 'エゲイラ・ゴスペル', 水: 'アナリプシア・ゴスペル', 土: 'テュシア・ゴスペル', 風: 'ゲネア・ゴスペル' };
+  const HAZE = { 火: 'オーロラ・ヘイズ', 風: 'オーロラ・ヘイズ', 光: 'オーロラ・ヘイズ', 水: 'カオティック・ヘイズ', 土: 'カオティック・ヘイズ', 闇: 'カオティック・ヘイズ' };
+  // 属性ごとの素材を作る。光/闇は2属性に半分ずつ分ける
+  const byElement = (element, table, qty) => (SPLIT[element]
+    ? SPLIT[element].map((x) => req(table[x], qty / 2))
+    : [req(table[element], qty)]);
+  const verum = (element, qty) => byElement(element, { 火: 'ヴェルム文書・火', 水: 'ヴェルム文書・水', 土: 'ヴェルム文書・土', 風: 'ヴェルム文書・風' }, qty);
+
+  for (const s of SAGES) {
+    const e = s.element;
+    const sub = `${s.sage}（${s.stone}・${e}）`;
+    const astra = `${e}精のアストラ`;
+    const idea = `${s.idea}のイデア`;
+    const frag = `${s.frag}・フラグメント`;
+    const arc = (stone, as, id, ve, haze) => [req('セフィラストーン', stone), req(astra, as), req(idea, id), ...verum(e, ve), req(HAZE[e], haze)];
+    const stoneSrc = GW + s.stonePage;
+    const stoneStages = [
+      { key: 'make', name: '召喚石：交換（SR）', reqs: [...arc(2, 3, 2, 6, 1), req('星晶塊', 100), req(`${ISLAND[e]}のマグナアニマ`, 30)] },
+      { key: 'sr1', name: '召喚石：SR1凸', reqs: [...arc(5, 5, 3, 16, 3), req('虹星晶', 100), req(`${e}晶のエレメント`, 100)] },
+      { key: 'sr2', name: '召喚石：SR2凸', reqs: [...arc(10, 10, 5, 30, 7), req(`${OLD_ANIMA[e]}のアニマ`, 30)] },
+      { key: 'sr3', name: '召喚石：SR3凸', reqs: [...arc(15, 15, 7, 50, 16), req(`${NEW_ANIMA[e]}のアニマ`, 30), req('究竟の証', 3)] },
+      {
+        key: 'ssr', name: '召喚石：SSR化',
+        reqs: [...arc(30, 30, 15, 80, 24), req('銀天の輝き', 5), ...byElement(e, Object.fromEntries(Object.entries(SERAPH).map(([k, v]) => [k, `${v}のアニマ`])), 20), req('金剛晶', 1)],
+      },
+      { key: '4', name: '召喚石：4凸', reqs: [...arc(45, 45, 25, 120, 32), req(`${MAGNA2[e]}のマグナアニマ`, 10), req(frag, 10)] },
+      {
+        key: '5', name: '召喚石：5凸',
+        reqs: [
+          req(SHOWDOWN[e], 100), ...byElement(e, SHARD, 50), ...verum(e, 250), req('ジェネシス・フラグメント', 80),
+          req('バハムートの紫電角', 10), req(frag, 20), req(s.grande, 50),
+        ],
+      },
+    ];
+    const join = {
+      key: 'join', name: '加入：カード交換',
+      note: '召喚石5凸後、「○○が描かれたカード」を交換してフェイトエピソードをクリアすると加入',
+      reqs: [req('セフィラストーン', 30), req(astra, 200), req(idea, 20), req('セフィラ玉髄', 1)],
+    };
+    for (const st of [...stoneStages, join]) {
+      presets.push({ id: `sage-${s.stone}-${st.key}`, group: '十賢者', sub, name: st.name, source: st === join ? GW + '144770' : stoneSrc, note: st.note, reqs: st.reqs });
+    }
+    presets.push({
+      id: `sage-${s.stone}-join-all`, group: '十賢者', sub, name: '加入：全段階まとめて（召喚石の交換〜加入）',
+      source: GW + '144770', reqs: sumReqs([...stoneStages, join]),
+    });
+
+    // 新世界の礎武器
+    const brights = (qty) => byElement(e, BRIGHT_NAME, qty);
+    const veritas = `${s.idea}のウェリタス`;
+    const weaponSrc = GW + s.weaponPage;
+    const weaponStages = [
+      { key: 'make', name: '礎武器：交換', reqs: [req('ニューワールド・クォーツ', 5), ...brights(e in SPLIT ? 6 : 5), req(veritas, 20)] },
+      { key: '1', name: '礎武器：1凸', reqs: [req('ニューワールド・クォーツ', 5), ...brights(e in SPLIT ? 14 : 15), req(veritas, 70), req('マリス・フラグメント', 30), ...verum(e, 100), req(astra, 30)] },
+      { key: '2', name: '礎武器：2凸', reqs: [req('ニューワールド・クォーツ', 10), ...brights(30), req(veritas, 100), req('蒼翠の結晶', 20), ...verum(e, 150), req(astra, 50), req(idea, 30)] },
+      { key: '3', name: '礎武器：3凸', reqs: [req('ニューワールド・クォーツ', 20), ...brights(50), req(veritas, 130), req(`${DRAGON[e]}の竜珠`, 20), ...verum(e, 200), req(astra, 100), req(idea, 70)] },
+      { key: '4', name: '礎武器：4凸', reqs: [req('ニューワールド・クォーツ', 20), ...brights(60), req(veritas, 150), req(`${DRAGON[e]}の竜珠`, 30), ...verum(e, 250), req(astra, 120), req(idea, 100)] },
+      {
+        key: '5', name: '礎武器：5凸',
+        reqs: [req('ニューワールド・クォーツ', 30), ...brights(70), req(veritas, 170), req(DRAGON_UNIQUE[e], 30), req(frag, 30), req(astra, 140), req(idea, 130), req('刻の流砂', 3)],
+      },
+    ];
+    for (const st of weaponStages) {
+      presets.push({ id: `sage-${s.stone}-weapon-${st.key}`, group: '十賢者', sub, name: st.name, source: weaponSrc, reqs: st.reqs });
+    }
+    presets.push({
+      id: `sage-${s.stone}-weapon-all`, group: '十賢者', sub, name: `礎武器：全段階まとめて（${s.weapon}）`,
+      source: weaponSrc, reqs: sumReqs(weaponStages),
+    });
+
+    const domain = {
+      key: 'domain', name: '至賢の領域：全解放（合計）',
+      note: '記事の合計値。領域の解放には礎武器の上限解放も必要',
+      reqs: [
+        req(veritas, 80), req(astra, 110), req(idea, 110), req(frag, 30), ...brights(20), ...verum(e, 360), req(HAZE[e], 50),
+        req('セフィラストーン', 50), req(`${e}のプシュケー`, 30), req(DRAGON_UNIQUE[e], 30), req('ジェネシス・フラグメント', 30),
+        req(`${MAGNA2[e]}のマグナアニマ`, 10),
+      ],
+    };
+    const final = {
+      key: 'final', name: '最終上限解放',
+      note: '至賢の領域の全解放と礎武器5凸、エリア・ムンドゥスのディフェンダー全討伐が条件',
+      reqs: [req('セフィラ玉髄', 1), ...byElement(e, GOSPEL, 50), ...brights(50), req('セフィラストーン', 200)],
+    };
+    const fourth = {
+      key: '4th', name: '4アビ取得（ザ・ワールドが描かれたカード）',
+      note: 'Lv100到達とザ・ワールド討伐後に交換できる',
+      reqs: [req('金剛晶', 1), req('世界のイデア', 100), req('ニューワールド・クォーツ', 30), req('ダマスカス骸晶', 10)],
+    };
+    for (const st of [domain, final, fourth]) {
+      presets.push({ id: `sage-${s.stone}-${st.key}`, group: '十賢者', sub, name: st.name, source: GW + '390463', note: st.note, reqs: st.reqs });
+    }
+    presets.push({
+      id: `sage-${s.stone}-final-all`, group: '十賢者', sub, name: '最終：全段階まとめて（至賢の領域・礎武器5凸・最終・4アビ）',
+      source: GW + '390463', reqs: sumReqs([domain, ...weaponStages, final, fourth]),
+    });
+  }
+
+  // 十賢者の限界超越 Lv110（2026-10 時点で記事に素材が載っているのはマリア・テレサとカイムのみ）
+  const SAGE_TRANSCEND = [
+    { sage: 'マリア・テレサ', stone: 'ジャスティス', reqs: [['ジャスティスビリーフ', 40], ['アクアホイール', 8], ['異律のアゲート', 1], ['ニューワールド・クォーツ', 20], ['ニフイヴィンテの魔核', 60], ['正義のイデア', 120], ['水精のアストラ', 240]] },
+    { sage: 'カイム', stone: 'ザ・ハングドマン', reqs: [['ザ・ハングドマンビリーフ', 40], ['テラホイール', 8], ['異律のアゲート', 1], ['ニューワールド・クォーツ', 20], ['ナロフィルミダスの魔核', 60], ['刑死者のイデア', 120], ['土精のアストラ', 240]] },
+  ];
+  for (const t of SAGE_TRANSCEND) {
+    const s = SAGES.find((x) => x.sage === t.sage);
+    presets.push({
+      id: `sage-${t.stone}-transcend-110`, group: '十賢者', sub: `${s.sage}（${s.stone}・${s.element}）`, name: '限界超越：Lv110解放',
+      source: GW + '537602', note: 'ソロモナスの賢者を進めると解放される',
+      reqs: t.reqs.map(([name, qty]) => req(name, qty)),
+    });
+  }
+
   return presets;
 })();
 

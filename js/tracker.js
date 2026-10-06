@@ -142,7 +142,7 @@ const Tracker = (() => {
     groupSelect.addEventListener('change', () => {
       const items = PRESETS.filter((p) => p.group === groupSelect.value);
       const subs = [...new Set(items.map((p) => p.sub).filter(Boolean))];
-      subLabel = groupSelect.value === '十天衆' ? 'キャラ' : '武器';
+      subLabel = { 十天衆: 'キャラ', 十賢者: 'キャラ', '天星器（十天衆加入）': '変更先の属性' }[groupSelect.value] || '武器';
       subSelect.hidden = subs.length === 0;
       subSelect.replaceChildren(
         el('option', { value: '', text: `${subLabel}を選択` }),

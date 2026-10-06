@@ -1,10 +1,8 @@
-/* 空と雲のテーマ。既定は夜空、data-theme="light" のときは青空 */
+/* 空のテーマ。既定は夜空、data-theme="light" のときは青空 */
 :root[data-theme="light"] {
   --sky-top: #3f8fd8;
   --sky-bottom: #8fd0f7;
   --bg: #eef5fc;
-  --bg-cloud: rgba(255, 255, 255, .85);
-  --cloud: rgba(255, 255, 255, .35);
   --card: #ffffff;
   --card-shadow: 0 2px 10px rgba(31, 70, 120, .08);
   --text: #1f2d4a;
@@ -32,8 +30,6 @@
   --sky-top: #0b1630;
   --sky-bottom: #1f3a68;
   --bg: #0f1a2c;
-  --bg-cloud: rgba(120, 150, 200, .12);
-  --cloud: rgba(255, 255, 255, .07);
   --card: #17253d;
   --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
   --text: #e6edf8;
@@ -65,15 +61,9 @@ body {
   color: var(--text);
   line-height: 1.6;
   background-color: var(--bg);
-  /* うっすら雲 */
-  background-image:
-    radial-gradient(ellipse 420px 120px at 12% 260px, var(--bg-cloud), transparent 70%),
-    radial-gradient(ellipse 520px 150px at 88% 620px, var(--bg-cloud), transparent 70%),
-    radial-gradient(ellipse 380px 110px at 30% 1100px, var(--bg-cloud), transparent 70%);
-  background-repeat: no-repeat;
 }
 
-/* ---------- ヘッダー（青空と雲） ---------- */
+/* ---------- ヘッダー（空） ---------- */
 .app-header {
   position: sticky;
   top: 0;
@@ -83,23 +73,6 @@ body {
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   box-shadow: 0 2px 12px rgba(20, 60, 110, .25);
   overflow: hidden;
-}
-/* 雲 */
-.app-header::before,
-.app-header::after {
-  content: '';
-  position: absolute;
-  border-radius: 999px;
-  background: var(--cloud);
-  pointer-events: none;
-}
-.app-header::before {
-  width: 180px; height: 44px; right: 8%; top: 10px;
-  box-shadow: 40px -14px 0 -4px var(--cloud), -50px 6px 0 -10px var(--cloud);
-}
-.app-header::after {
-  width: 120px; height: 30px; right: 38%; top: 34px;
-  box-shadow: 30px -10px 0 -4px var(--cloud);
 }
 .app-header h1 {
   position: relative;
