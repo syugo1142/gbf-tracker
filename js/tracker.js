@@ -123,11 +123,13 @@ const Tracker = (() => {
     const info = document.getElementById('preset-info');
 
     // コンテンツ → (キャラ名など。sub があるコンテンツのみ) → プリセット
-    const groups = [...new Set(PRESETS.map((p) => p.group))];
-    groupSelect.append(
-      el('option', { value: '', text: 'コンテンツを選択' }),
-      ...groups.map((g) => el('option', { value: g, text: g })),
-    );
+    // キャラ・武器などの大分類ごとに見出しを付けて並べる
+    groupSelect.append(el('option', { value: '', text: 'コンテンツを選択' }));
+    for (const category of PRESET_CATEGORIES) {
+      const groups = [...new Set(PRESETS.filter((p) => presetCategory(p) === category).map((p) => p.group))];
+      if (groups.length === 0) continue;
+      groupSelect.append(el('optgroup', { label: category }, groups.map((g) => el('option', { value: g, text: g }))));
+    }
 
     function fillPresets(items, emptyText) {
       select.replaceChildren(
@@ -192,6 +194,7 @@ const Tracker = (() => {
     app.state.targets.push({
       id: uid(),
       name: count > 1 ? `${presetLabel(preset)} ×${count}` : presetLabel(preset),
+      category: presetCategory(preset),
       done: false,
       reqs: mergeReqs(reqs),
     });
@@ -387,7 +390,13 @@ const Tracker = (() => {
 
     const active = app.state.targets.filter((t) => !t.done);
     const done = app.state.targets.filter((t) => t.done);
-    for (const t of active) list.append(targetCard(t, active));
+    // キャラ・武器・その他（自分で素材を指定した目標）に分けて並べる
+    for (const category of PRESET_CATEGORIES) {
+      const items = active.filter((t) => categoryOf(t) === category);
+      if (items.length === 0) continue;
+      list.append(el('h3', { class: 'target-group' }, [category, el('span', { class: 'target-group-count', text: `${items.length}件` })]));
+      for (const t of items) list.append(targetCard(t, active));
+    }
     if (active.length === 0) list.append(el('p', { class: 'empty', text: '未完了の目標はありません。' }));
 
     if (done.length) {
@@ -396,6 +405,17 @@ const Tracker = (() => {
         ...done.map((t) => targetCard(t, active)),
       ]));
     }
+  }
+
+  // 目標の大分類。分類を持たない以前の目標は、名前からプリセットを探して決める
+  let labelCategories;
+  function categoryOf(t) {
+    if (t.category) return t.category;
+    if (!labelCategories) {
+      labelCategories = new Map(PRESETS.map((p) => [presetLabel(p), presetCategory(p)]));
+    }
+    const base = t.name.replace(/(（コピー）)+$/, '').replace(/ ×\d+$/, '');
+    return labelCategories.get(base) || 'その他';
   }
 
   // 素材ごとの達成率の平均（ルピのように桁が大きい素材があっても偏らないように）
@@ -492,6 +512,7 @@ const Tracker = (() => {
     app.state.targets.push({
       id: uid(),
       name: `${t.name}（コピー）`,
+      category: categoryOf(t),
       done: false,
       reqs: t.reqs.map((r) => ({ ...r })),
     });
