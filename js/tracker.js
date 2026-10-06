@@ -300,10 +300,13 @@ const Tracker = (() => {
             onclick: () => removeMaterialIcon(m),
           }) : null,
         ]),
-        el('button', {
-          type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
-          onclick: () => renameMaterial(m),
-        }),
+        el('span', { class: 'mat-label' }, [
+          el('button', {
+            type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
+            onclick: () => renameMaterial(m),
+          }),
+          MaterialSource.of(m.name) ? el('small', { class: 'mat-source', text: `入手: ${MaterialSource.of(m.name)}` }) : null,
+        ]),
         sharedWith.length ? el('span', {
           class: 'badge shared', text: '共通',
           title: `ほかの目標でも使用: ${sharedWith.join('、')}`,

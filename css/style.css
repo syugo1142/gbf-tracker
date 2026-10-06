@@ -207,6 +207,8 @@ details.card[open] > summary { margin-bottom: 12px; }
 
 /* 素材アイコン */
 .mat-name { display: flex; align-items: center; gap: 8px; }
+.mat-label { display: flex; flex-direction: column; align-items: flex-start; }
+.mat-source { color: var(--muted); font-size: .75rem; line-height: 1.3; white-space: normal; max-width: 22em; }
 .mat-icon {
   --size: 32px;
   display: inline-flex;
