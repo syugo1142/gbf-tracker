@@ -22,6 +22,24 @@ const Spark = (() => {
     render();
   }
 
+  // ガチャチケットを宝晶石に換算した内訳（単発1枚=300個、10連1枚=3000個）
+  function ticketSummary(s) {
+    const singleValue = s.singles * CRYSTALS_PER_DRAW;
+    const tenValue = s.tens * CRYSTALS_PER_DRAW * 10;
+    const ticketValue = singleValue + tenValue;
+    return el('div', { class: 'ticket-summary' }, [
+      el('p', {}, [
+        'チケットの宝晶石換算: ',
+        el('strong', { text: `${formatNum(ticketValue)} 個` }),
+        el('small', { text: `（単発 ${formatNum(s.singles)} 枚＝${formatNum(singleValue)} 個、10連 ${formatNum(s.tens)} 枚＝${formatNum(tenValue)} 個）` }),
+      ]),
+      el('p', {}, [
+        '宝晶石＋チケットの合計: ',
+        el('strong', { text: `${formatNum(s.crystals + ticketValue)} 個` }),
+      ]),
+    ]);
+  }
+
   function render() {
     const s = app.state.spark;
     const box = document.getElementById('spark-result');
@@ -35,6 +53,7 @@ const Spark = (() => {
     const children = [
       el('h2', { text: '現在' }),
       el('p', { class: 'big' }, [`${formatNum(now)} 連分`]),
+      ticketSummary(s),
       el('p', { class: sparkCount > 0 ? 'good' : '' }, [
         '天井 ',
         el('strong', { class: 'spark-count', text: formatNum(sparkCount) }),
