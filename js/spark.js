@@ -22,21 +22,12 @@ const Spark = (() => {
     render();
   }
 
-  // ガチャチケットを宝晶石に換算した内訳（単発1枚=300個、10連1枚=3000個）
-  function ticketSummary(s) {
-    const singleValue = s.singles * CRYSTALS_PER_DRAW;
-    const tenValue = s.tens * CRYSTALS_PER_DRAW * 10;
-    const ticketValue = singleValue + tenValue;
-    return el('div', { class: 'ticket-summary' }, [
-      el('p', {}, [
-        'チケットの宝晶石換算: ',
-        el('strong', { text: `${formatNum(ticketValue)} 個` }),
-        el('small', { text: `（単発 ${formatNum(s.singles)} 枚＝${formatNum(singleValue)} 個、10連 ${formatNum(s.tens)} 枚＝${formatNum(tenValue)} 個）` }),
-      ]),
-      el('p', {}, [
-        '宝晶石＋チケットの合計: ',
-        el('strong', { text: `${formatNum(s.crystals + ticketValue)} 個` }),
-      ]),
+  // 大きな数字のタイル1枚分
+  function statTile(label, value, unit, sub, extraClass = '') {
+    return el('div', { class: `stat ${extraClass}` }, [
+      el('div', { class: 'stat-label', text: label }),
+      el('div', { class: 'stat-value' }, [value, el('span', { class: 'stat-unit', text: unit })]),
+      el('div', { class: 'stat-sub', text: sub || ' ' }),
     ]);
   }
 
@@ -49,25 +40,34 @@ const Spark = (() => {
     const remaining = CEILING - progress;
     // 端数の宝晶石も使って、あと何個あれば次の天井か
     const needCrystals = remaining * CRYSTALS_PER_DRAW - (s.crystals % CRYSTALS_PER_DRAW);
+    // ガチャチケットの宝晶石換算（単発1枚=300個、10連1枚=3000個）
+    const singleValue = s.singles * CRYSTALS_PER_DRAW;
+    const tenValue = s.tens * CRYSTALS_PER_DRAW * 10;
+    const ticketValue = singleValue + tenValue;
 
-    const children = [
-      el('h2', { text: '現在' }),
-      el('p', { class: 'big' }, [`${formatNum(now)} 連分`]),
-      ticketSummary(s),
-      el('p', { class: sparkCount > 0 ? 'good' : '' }, [
-        '天井 ',
-        el('strong', { class: 'spark-count', text: formatNum(sparkCount) }),
-        ` 回分${sparkCount > 0 && progress > 0 ? `（＋${formatNum(progress)} 連）` : ''}`,
+    box.replaceChildren(
+      el('div', { class: 'stats' }, [
+        statTile('いま引ける', formatNum(now), '連', `うちガチャPt ${formatNum(s.sparks)}`),
+        statTile('天井', formatNum(sparkCount), '回分',
+          sparkCount > 0 && progress > 0 ? `＋${formatNum(progress)} 連` : '', sparkCount > 0 ? 'reached' : ''),
+        statTile('宝晶石＋チケット', formatNum(s.crystals + ticketValue), '個', `うちチケット ${formatNum(ticketValue)} 個`),
       ]),
-      el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${(progress / CEILING) * 100}%` })),
+      el('div', { class: 'progress' }, [
+        el('div', { class: 'progress-head' }, [
+          el('span', { text: sparkCount > 0 ? `${sparkCount + 1} 回目の天井まで` : '天井まで' }),
+          el('strong', { text: `あと ${formatNum(remaining)} 連` }),
+        ]),
+        el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${(progress / CEILING) * 100}%` })),
+        el('div', { class: 'progress-foot' }, [
+          el('span', { text: `${formatNum(progress)} / ${CEILING}` }),
+          el('span', { text: `宝晶石なら ${formatNum(needCrystals)} 個` }),
+        ]),
+      ]),
       el('p', {
-        text: `${sparkCount > 0 ? `${sparkCount + 1} 回目の天井` : '天井'}まで あと ${formatNum(remaining)} 連（宝晶石 ${formatNum(needCrystals)} 個）`,
+        class: 'hint',
+        text: `チケット内訳: 単発 ${formatNum(s.singles)} 枚＝${formatNum(singleValue)} 個、10連 ${formatNum(s.tens)} 枚＝${formatNum(tenValue)} 個。宝晶石300個=1連、10連チケット=10連で計算しています。`,
       }),
-    ];
-
-    children.push(el('p', { class: 'hint', text: '宝晶石300個=1連、10連チケット=10連で計算しています。' }));
-
-    box.replaceChildren(...children);
+    );
   }
 
   return { init, render };
