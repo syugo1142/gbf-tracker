@@ -1,5 +1,5 @@
-/* 空と雲のテーマ。昼は青空、ダークモードは夜空 */
-:root {
+/* 空と雲のテーマ。既定は夜空、data-theme="light" のときは青空 */
+:root[data-theme="light"] {
   --sky-top: #3f8fd8;
   --sky-bottom: #8fd0f7;
   --bg: #eef5fc;
@@ -28,34 +28,33 @@
   --el-none: #7a8294;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --sky-top: #0b1630;
-    --sky-bottom: #1f3a68;
-    --bg: #0f1a2c;
-    --bg-cloud: rgba(120, 150, 200, .12);
-    --cloud: rgba(255, 255, 255, .07);
-    --card: #17253d;
-    --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
-    --text: #e6edf8;
-    --muted: #9badc9;
-    --border: #2c3f60;
-    --field: #1d2d49;
-    --accent: #5aa2ec;
-    --gold: #e2b84e;
-    --gold-light: #f5d987;
-    --good: #5fcf8d;
-    --bad: #f07a70;
-    --good-bg: #183528;
-    --bad-bg: #3a2222;
-    --el-fire: #e0685c;
-    --el-water: #4f97e8;
-    --el-earth: #c48f45;
-    --el-wind: #45b574;
-    --el-light: #d4b340;
-    --el-dark: #9570d6;
-    --el-none: #63708a;
-  }
+:root {
+  --sky-top: #0b1630;
+  --sky-bottom: #1f3a68;
+  --bg: #0f1a2c;
+  --bg-cloud: rgba(120, 150, 200, .12);
+  --cloud: rgba(255, 255, 255, .07);
+  --card: #17253d;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+  --text: #e6edf8;
+  --muted: #9badc9;
+  --border: #2c3f60;
+  --field: #1d2d49;
+  --accent: #5aa2ec;
+  --accent-text: #ffffff;
+  --gold: #e2b84e;
+  --gold-light: #f5d987;
+  --good: #5fcf8d;
+  --bad: #f07a70;
+  --good-bg: #183528;
+  --bad-bg: #3a2222;
+  --el-fire: #e0685c;
+  --el-water: #4f97e8;
+  --el-earth: #c48f45;
+  --el-wind: #45b574;
+  --el-light: #d4b340;
+  --el-dark: #9570d6;
+  --el-none: #63708a;
 }
 
 * { box-sizing: border-box; }
@@ -124,18 +123,17 @@ body {
 }
 .tab:hover { background: rgba(255, 255, 255, .3); }
 .tab.active { background: #fff; color: var(--sky-top); border-color: #fff; }
-@media (prefers-color-scheme: dark) {
-  .tab.active { color: #0b1630; }
-  .app-header {
-    background:
-      radial-gradient(1.5px 1.5px at 12% 30%, #fff, transparent),
-      radial-gradient(1px 1px at 28% 70%, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 47% 22%, #fff, transparent),
-      radial-gradient(1px 1px at 63% 58%, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 81% 35%, #fff, transparent),
-      radial-gradient(1px 1px at 92% 75%, #fff, transparent),
-      linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
-  }
+/* 夜空（既定）だけのルール */
+:root:not([data-theme="light"]) .tab.active { color: #0b1630; }
+:root:not([data-theme="light"]) .app-header {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 70%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 47% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 63% 58%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 81% 35%, #fff, transparent),
+    radial-gradient(1px 1px at 92% 75%, #fff, transparent),
+    linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
 }
 
 main { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
@@ -399,3 +397,18 @@ details.card[open] > summary { margin-bottom: 12px; }
   .stat-value { font-size: 1.7rem; }
   .app-header::after { display: none; }
 }
+
+/* 昼／夜の切り替えボタン */
+.theme-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  padding: 3px 12px;
+  font-size: .85rem;
+}
+.theme-toggle:hover:not(:disabled) { background: rgba(255, 255, 255, .3); border-color: #fff; }
