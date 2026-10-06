@@ -782,6 +782,14 @@ const PRESET_RENAMES = (() => {
   return map;
 })();
 
+// コンテンツの大分類。プリセットの選択肢と目標リストをこの順に分けて並べる
+const PRESET_CATEGORIES = ['キャラ', '武器', 'その他'];
+const CHARACTER_GROUPS = ['十天衆', '十賢者', '天星器（十天衆加入）'];
+
+function presetCategory(p) {
+  return CHARACTER_GROUPS.includes(p.group) ? 'キャラ' : '武器';
+}
+
 // 目標に付ける名前（キャラ名などの sub があれば「ウーノ：最終：銀の依代 最終解放」のように前に付ける）
 function presetLabel(p) {
   return p.sub ? `${p.sub}：${p.name}` : p.name;

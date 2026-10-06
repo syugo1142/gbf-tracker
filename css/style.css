@@ -207,6 +207,17 @@ input.num { width: 80px; }
 
 /* ---------- 目標リスト ---------- */
 #target-list { margin-top: 8px; display: grid; gap: 10px; }
+.target-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: .95rem;
+  color: var(--muted);
+}
+.target-group-count { font-size: .8rem; font-weight: normal; }
 .list-tools { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 .list-tools button { font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
 

@@ -5,7 +5,7 @@ const AppStorage = (() => {
   function defaults() {
     return {
       materials: [], // { id, name, owned, perRun, icon?: 画像の data URL }
-      targets: [],   // { id, name, done, reqs: [{ materialId, qty }] }
+      targets: [],   // { id, name, category?: 'キャラ' | '武器' | 'その他', done, reqs: [{ materialId, qty }] }
       spark: { crystals: 0, singles: 0, tens: 0, sparks: 0 },
     };
   }
