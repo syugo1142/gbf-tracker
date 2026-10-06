@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>グラブル便利ツール</title>
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // 既定は夜（ダーク）。昼を選んでいたら、描画前に反映してちらつきを防ぐ
+    try { if (localStorage.getItem('gbf-tools-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}
+  </script>
 </head>
 <body>
   <header class="app-header">
     <h1>グラブル便利ツール</h1>
+    <button type="button" class="theme-toggle" id="theme-toggle"></button>
     <nav class="tabs">
       <button class="tab active" data-tab="tracker">素材トラッカー</button>
       <button class="tab" data-tab="spark">天井計算</button>
