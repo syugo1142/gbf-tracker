@@ -31,7 +31,7 @@ const AppStorage = (() => {
     }
   }
 
-  // 以前は天井計算の手持ちも同じキーに入れていた。天井計算は独立したページ（spark/）になったので、
+  // 以前は天井計算の手持ちも同じキーに入れていた。天井計算は別のツール（tenjou-keisan）になったので、
   // そちらのキーがまだ空なら移しておく（このキーからは次の保存で消える）
   function moveSparkData(data) {
     if (!data?.spark) return;
