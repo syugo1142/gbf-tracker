@@ -14,93 +14,74 @@
   <header class="app-header">
     <h1>グラブル便利ツール</h1>
     <button type="button" class="theme-toggle" id="theme-toggle"></button>
-    <nav class="tabs">
-      <button class="tab active" data-tab="tracker">素材トラッカー</button>
-      <button class="tab" data-tab="spark">天井計算</button>
-      <button class="tab" data-tab="backup">バックアップ</button>
-    </nav>
   </header>
 
   <main>
     <!-- 素材トラッカー -->
-    <section id="tab-tracker" class="panel active">
-      <div class="card">
-        <h2>目標</h2>
-        <form id="preset-form" class="inline-form">
-          <select name="group" required></select>
-          <select name="sub" hidden></select>
-          <select name="preset" required disabled></select>
-          <label class="count-label">×<input name="count" type="number" min="1" value="1"></label>
-          <button type="submit">プリセットから追加</button>
-        </form>
-        <p class="hint" id="preset-info"></p>
-        <details>
-          <summary>自分で素材を指定して登録</summary>
-          <form id="target-form">
-          <div id="req-rows"></div>
-          <div class="row-buttons">
-            <button type="button" id="add-req-row">＋ 素材を追加</button>
-            <button type="submit">目標を登録</button>
-          </div>
-          </form>
-        </details>
-        <div class="list-tools">
-          <button type="button" id="open-all">すべて開く</button>
-          <button type="button" id="close-all">すべて閉じる</button>
+    <div class="card">
+      <h2>目標</h2>
+      <form id="preset-form" class="inline-form">
+        <select name="group" required></select>
+        <select name="sub" hidden></select>
+        <select name="preset" required disabled></select>
+        <label class="count-label">×<input name="count" type="number" min="1" value="1"></label>
+        <button type="submit">プリセットから追加</button>
+      </form>
+      <p class="hint" id="preset-info"></p>
+      <details>
+        <summary>自分で素材を指定して登録</summary>
+        <form id="target-form">
+        <div id="req-rows"></div>
+        <div class="row-buttons">
+          <button type="button" id="add-req-row">＋ 素材を追加</button>
+          <button type="submit">目標を登録</button>
         </div>
-        <div id="target-list"></div>
-      </div>
-
-      <details class="card" id="all-materials" data-key="all-materials">
-        <summary><h2>全素材の合計</h2></summary>
-        <p class="hint">未完了の目標すべての必要数を素材ごとに合計した一覧です。複数の目標で使う素材の不足はここで確認できます。「1周平均」を入れると、不足分を集めるのに必要な周回数の目安が出ます。</p>
-        <form id="material-form" class="inline-form">
-          <input name="name" placeholder="素材名（例: 〇〇の証）" required>
-          <input name="owned" type="number" min="0" placeholder="所持数" value="0">
-          <input name="perRun" type="number" min="0" step="0.01" placeholder="1周あたり平均ドロップ">
-          <button type="submit">素材を追加</button>
         </form>
-        <div class="table-wrap">
-          <table id="material-table">
-            <thead>
-              <tr>
-                <th>素材</th><th>所持</th><th>必要</th><th>不足</th>
-                <th>1周平均</th><th>目安周回</th><th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
       </details>
-    </section>
-
-    <!-- 天井計算 -->
-    <section id="tab-spark" class="panel">
-      <div class="card">
-        <h2>手持ち</h2>
-        <form id="spark-form" class="grid-form">
-          <label>宝晶石<input name="crystals" type="number" min="0"></label>
-          <label>単発チケット<input name="singles" type="number" min="0"></label>
-          <label>10連チケット<input name="tens" type="number" min="0"></label>
-          <label>現在の蒼光の輝き（ガチャPt）<input name="sparks" type="number" min="0"></label>
-        </form>
+      <div class="list-tools">
+        <button type="button" id="open-all">すべて開く</button>
+        <button type="button" id="close-all">すべて閉じる</button>
       </div>
-      <div class="card" id="spark-result"></div>
-    </section>
+      <div id="target-list"></div>
+    </div>
+
+    <details class="card" id="all-materials" data-key="all-materials">
+      <summary><h2>全素材の合計</h2></summary>
+      <p class="hint">未完了の目標すべての必要数を素材ごとに合計した一覧です。複数の目標で使う素材の不足はここで確認できます。「1周平均」を入れると、不足分を集めるのに必要な周回数の目安が出ます。</p>
+      <form id="material-form" class="inline-form">
+        <input name="name" placeholder="素材名（例: 〇〇の証）" required>
+        <input name="owned" type="number" min="0" placeholder="所持数" value="0">
+        <input name="perRun" type="number" min="0" step="0.01" placeholder="1周あたり平均ドロップ">
+        <button type="submit">素材を追加</button>
+      </form>
+      <div class="table-wrap">
+        <table id="material-table">
+          <thead>
+            <tr>
+              <th>素材</th><th>所持</th><th>必要</th><th>不足</th>
+              <th>1周平均</th><th>目安周回</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
 
     <!-- バックアップ -->
-    <section id="tab-backup" class="panel">
-      <div class="card">
-        <h2>バックアップ</h2>
-        <p>データはこのブラウザ内（localStorage）にだけ保存されています。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
-        <div class="row-buttons">
-          <button id="export-btn">JSONを書き出す</button>
-          <label class="file-button">JSONを読み込む<input type="file" id="import-file" accept="application/json" hidden></label>
-          <button id="reset-btn" class="danger">全データを削除</button>
-        </div>
+    <details class="card" id="backup">
+      <summary><h2>バックアップ</h2></summary>
+      <p>データはこのブラウザ内（localStorage）にだけ保存されています。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
+      <div class="row-buttons">
+        <button id="export-btn">JSONを書き出す</button>
+        <label class="file-button">JSONを読み込む<input type="file" id="import-file" accept="application/json" hidden></label>
+        <button id="reset-btn" class="danger">全データを削除</button>
       </div>
-    </section>
+    </details>
   </main>
+
+  <footer class="app-footer">
+    非公式のファンメイドツールです。株式会社Cygamesとは関係ありません。素材データの出典は各プリセットの「出典」リンクを参照してください。
+  </footer>
 
   <script src="js/storage.js"></script>
   <script src="js/util.js"></script>
@@ -108,7 +89,8 @@
   <script src="js/presets.js"></script>
   <script src="js/sources.js"></script>
   <script src="js/tracker.js"></script>
-  <script src="js/spark.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/backup.js"></script>
+  <script>Tracker.init(app);</script>
 </body>
 </html>

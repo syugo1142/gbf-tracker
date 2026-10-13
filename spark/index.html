@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>グラブル天井計算</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // 既定は夜（ダーク）。昼を選んでいたら、描画前に反映してちらつきを防ぐ
+    try { if (localStorage.getItem('gbf-spark-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}
+  </script>
+</head>
+<body>
+  <header class="app-header">
+    <h1>グラブル天井計算</h1>
+    <button type="button" class="theme-toggle" id="theme-toggle"></button>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>手持ち</h2>
+      <form id="spark-form" class="grid-form">
+        <label>宝晶石<input name="crystals" type="number" min="0"></label>
+        <label>単発チケット<input name="singles" type="number" min="0"></label>
+        <label>10連チケット<input name="tens" type="number" min="0"></label>
+        <label>現在の蒼光の輝き（ガチャPt）<input name="sparks" type="number" min="0"></label>
+      </form>
+    </div>
+    <div class="card" id="spark-result"></div>
+  </main>
+
+  <footer class="app-footer">
+    非公式のファンメイドツールです。株式会社Cygamesとは関係ありません。入力した数はこのブラウザの中にだけ保存されます。
+  </footer>
+
+  <script src="spark.js"></script>
+</body>
+</html>
