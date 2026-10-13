@@ -6,7 +6,6 @@ const AppStorage = (() => {
     return {
       materials: [], // { id, name, owned, perRun, icon?: 画像の data URL }
       targets: [],   // { id, name, category?: 'キャラ' | '武器' | 'その他', done, reqs: [{ materialId, qty }] }
-      spark: { crystals: 0, singles: 0, tens: 0, sparks: 0 },
     };
   }
 
@@ -16,19 +15,29 @@ const AppStorage = (() => {
     return {
       materials: Array.isArray(data?.materials) ? data.materials : d.materials,
       targets: Array.isArray(data?.targets) ? data.targets : d.targets,
-      // 以前の版にあった daily / extra / date は読み込まない
-      spark: Object.fromEntries(Object.keys(d.spark).map((k) => [k, data?.spark?.[k] ?? d.spark[k]])),
     };
   }
 
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      return raw ? normalize(JSON.parse(raw)) : defaults();
+      if (!raw) return defaults();
+      const data = JSON.parse(raw);
+      moveSparkData(data);
+      return normalize(data);
     } catch (e) {
       console.warn('読み込みに失敗しました', e);
       return defaults();
     }
+  }
+
+  // 以前は天井計算の手持ちも同じキーに入れていた。天井計算は独立したページ（spark/）になったので、
+  // そちらのキーがまだ空なら移しておく（このキーからは次の保存で消える）
+  function moveSparkData(data) {
+    if (!data?.spark) return;
+    try {
+      if (localStorage.getItem('gbf-spark-v1') === null) localStorage.setItem('gbf-spark-v1', JSON.stringify(data.spark));
+    } catch {}
   }
 
   function save(state) {

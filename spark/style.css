@@ -1,0 +1,173 @@
+/* グラブル天井計算のスタイル。空のテーマ。既定は夜空、data-theme="light" のときは青空 */
+:root[data-theme="light"] {
+  --sky-top: #3f8fd8;
+  --sky-bottom: #8fd0f7;
+  --bg: #eef5fc;
+  --card: #ffffff;
+  --card-shadow: 0 2px 10px rgba(31, 70, 120, .08);
+  --text: #1f2d4a;
+  --muted: #687792;
+  --border: #d6e2f0;
+  --field: #f7fafe;
+  --accent: #2b7bd0;
+  --accent-text: #ffffff;
+  --gold: #d1a131;
+  --gold-light: #f2d27a;
+}
+
+:root {
+  --sky-top: #0b1630;
+  --sky-bottom: #1f3a68;
+  --bg: #0f1a2c;
+  --card: #17253d;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+  --text: #e6edf8;
+  --muted: #9badc9;
+  --border: #2c3f60;
+  --field: #1d2d49;
+  --accent: #5aa2ec;
+  --accent-text: #ffffff;
+  --gold: #e2b84e;
+  --gold-light: #f5d987;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--text);
+  line-height: 1.6;
+  background-color: var(--bg);
+}
+
+/* ---------- ヘッダー（空） ---------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 14px 16px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+  box-shadow: 0 2px 12px rgba(20, 60, 110, .25);
+  overflow: hidden;
+}
+.app-header h1 {
+  position: relative;
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: .04em;
+  text-shadow: 0 1px 3px rgba(0, 40, 90, .35);
+}
+.app-header h1::before { content: '✦ '; color: var(--gold-light); }
+/* 夜空（既定）だけのルール */
+:root:not([data-theme="light"]) .app-header {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 70%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 47% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 63% 58%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 81% 35%, #fff, transparent),
+    radial-gradient(1px 1px at 92% 75%, #fff, transparent),
+    linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+}
+
+main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
+.app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .8rem; }
+
+/* ---------- カード ---------- */
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--card-shadow);
+}
+/* 上辺の金のライン */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 18px; right: 18px; top: -1px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+}
+.card h2 { margin: 0 0 14px; font-size: 1.1rem; }
+.card h2::before { content: '◆ '; color: var(--gold); font-size: .85em; }
+
+/* ---------- 入力 ---------- */
+input {
+  font: inherit;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+input:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--card); }
+
+.hint { color: var(--muted); font-size: .9rem; }
+
+/* ---------- 天井計算 ---------- */
+.grid-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.grid-form label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--muted); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.stat {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, var(--card), var(--field));
+}
+.stat-label { font-size: .85rem; color: var(--muted); }
+.stat-value { font-size: 2.1rem; font-weight: bold; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat-unit { font-size: .95rem; font-weight: normal; color: var(--muted); margin-left: 4px; }
+.stat-sub { font-size: .8rem; color: var(--muted); }
+.stat.reached { border-color: var(--gold); background: linear-gradient(180deg, color-mix(in srgb, var(--gold-light) 30%, var(--card)), var(--card)); }
+.stat.reached .stat-value { color: var(--gold); }
+
+.progress { margin-top: 16px; }
+.progress-head, .progress-foot { display: flex; justify-content: space-between; gap: 8px; }
+.progress-head strong { font-size: 1.1rem; }
+.progress-foot { font-size: .85rem; color: var(--muted); }
+
+.bar {
+  height: 14px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width .25s;
+}
+
+/* ---------- スマホ ---------- */
+@media (max-width: 600px) {
+  main { padding: 14px 12px 32px; }
+  .card { padding: 14px; }
+  .stat-value { font-size: 1.7rem; }
+}
+
+/* 昼／夜の切り替えボタン */
+.theme-toggle {
+  font: inherit;
+  cursor: pointer;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  padding: 3px 12px;
+  font-size: .85rem;
+}
+.theme-toggle:hover { background: rgba(255, 255, 255, .3); border-color: #fff; }

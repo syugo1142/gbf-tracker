@@ -68,7 +68,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 14px 16px 0;
+  padding: 14px 16px;
   color: #fff;
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   box-shadow: 0 2px 12px rgba(20, 60, 110, .25);
@@ -76,28 +76,14 @@ body {
 }
 .app-header h1 {
   position: relative;
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 1.3rem;
   letter-spacing: .04em;
   text-shadow: 0 1px 3px rgba(0, 40, 90, .35);
 }
 .app-header h1::before { content: '✦ '; color: var(--gold-light); }
 
-.tabs { position: relative; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; }
-.tab {
-  border: 1px solid rgba(255, 255, 255, .55);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .18);
-  color: #fff;
-  padding: 5px 16px;
-  white-space: nowrap;
-  font-weight: bold;
-  transition: background .15s;
-}
-.tab:hover { background: rgba(255, 255, 255, .3); }
-.tab.active { background: #fff; color: var(--sky-top); border-color: #fff; }
 /* 夜空（既定）だけのルール */
-:root:not([data-theme="light"]) .tab.active { color: #0b1630; }
 :root:not([data-theme="light"]) .app-header {
   background:
     radial-gradient(1.5px 1.5px at 12% 30%, #fff, transparent),
@@ -109,9 +95,8 @@ body {
     linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
 }
 
-main { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
-.panel { display: none; }
-.panel.active { display: block; }
+main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
+.app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .8rem; }
 
 /* ---------- カード ---------- */
 .card {
@@ -275,30 +260,7 @@ details.card > summary { margin: 0; color: var(--text); }
 details.card > summary h2 { display: inline; margin: 0; }
 details.card[open] > summary { margin-bottom: 12px; }
 
-/* ---------- 天井計算 ---------- */
-.grid-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.grid-form label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--muted); }
-
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-.stat {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  background: linear-gradient(180deg, var(--card), var(--field));
-}
-.stat-label { font-size: .85rem; color: var(--muted); }
-.stat-value { font-size: 2.1rem; font-weight: bold; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.stat-unit { font-size: .95rem; font-weight: normal; color: var(--muted); margin-left: 4px; }
-.stat-sub { font-size: .8rem; color: var(--muted); }
-.stat.reached { border-color: var(--gold); background: linear-gradient(180deg, color-mix(in srgb, var(--gold-light) 30%, var(--card)), var(--card)); }
-.stat.reached .stat-value { color: var(--gold); }
-
-.progress { margin-top: 16px; }
-.progress-head, .progress-foot { display: flex; justify-content: space-between; gap: 8px; }
-.progress-head strong { font-size: 1.1rem; }
-.progress-foot { font-size: .85rem; color: var(--muted); }
-
-.big { font-size: 2rem; font-weight: bold; margin: 0; }
+/* ---------- 進捗バー ---------- */
 .bar {
   height: 14px;
   background: var(--field);
@@ -378,7 +340,6 @@ details.card[open] > summary { margin-bottom: 12px; }
 @media (max-width: 600px) {
   main { padding: 14px 12px 32px; }
   .card { padding: 14px; }
-  .stat-value { font-size: 1.7rem; }
   .app-header::after { display: none; }
 }
 
