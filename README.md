@@ -23,7 +23,7 @@
 
 ## 使い方
 - GitHub Pages で公開しているページを開く
-- または、このリポジトリをダウンロードして（Code → Download ZIP、または `git clone`）、`index.html` をブラウザで開く
+- または、このリポジトリをダウンロードして（Code → Download ZIP、または `git clone`）、`tracker/index.html`（天井計算は `spark/index.html`）をブラウザで開く
 
 データはブラウザのlocalStorageに保存され、サーバーには送られません。ブラウザのデータを消すと消えるので、ときどき「バックアップ」から書き出してください。素材のアイコン画像も、登録した人のブラウザの中にだけ保存されます。
 
@@ -45,22 +45,24 @@
 
 ## ファイル構成
 ```
-index.html      # 素材トラッカー
-css/style.css
-js/
-├─ storage.js   # localStorage への保存と読み込み
-├─ util.js      # DOM 生成ヘルパーなど
-├─ icons.js     # 素材のアイコン画像
-├─ presets.js   # 目標プリセット（必要素材データ）
-├─ sources.js   # 素材の入手先
-├─ tracker.js   # 素材トラッカー
-├─ app.js       # データの保持、昼／夜の切り替え
-└─ backup.js    # バックアップ
-spark/          # 天井計算（独立したツール）
+tracker/            # 素材トラッカー（便利ツール）
+├─ index.html
+├─ css/style.css
+└─ js/
+   ├─ storage.js    # localStorage への保存と読み込み
+   ├─ util.js       # DOM 生成ヘルパーなど
+   ├─ icons.js      # 素材のアイコン画像
+   ├─ presets.js    # 目標プリセット（必要素材データ）
+   ├─ sources.js    # 素材の入手先
+   ├─ tracker.js    # 素材トラッカー
+   ├─ app.js        # データの保持、昼／夜の切り替え
+   └─ backup.js     # バックアップ
+spark/              # 天井計算（独立したツール）
 ├─ index.html
 ├─ style.css
 └─ spark.js
 ```
+2つのツールはファイルを共有していないので、フォルダごと取り出してもそれぞれ動きます。
 ES Modulesは使わず、普通のscriptタグで読み込んでいます（ファイルを直接開いても動くようにするため）。
 
 ## 今後の予定
