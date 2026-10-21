@@ -23,8 +23,9 @@
 - データをJSONファイルに書き出す／読み込む（ページの一番下）
 
 ## 使い方
-1. このリポジトリをダウンロードする（Code → Download ZIP、または `git clone`）
-2. `index.html` をブラウザで開く
+https://syugo1142.github.io/gbf-tracker/ を開くだけで使えます。
+
+手元で使う場合は、このリポジトリをダウンロードして（Code → Download ZIP、または `git clone`）、`index.html` をブラウザで開いてください。
 
 データはブラウザのlocalStorageに保存され、サーバーには送られません。ブラウザのデータを消すと消えるので、ときどき「バックアップ」から書き出してください。
 
