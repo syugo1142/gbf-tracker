@@ -5,3 +5,6 @@
 *.jpeg
 *.webp
 *.gif
+
+# ただし Claude Code の共有設定（会話開始時の自動チェック）は入れる
+!.claude/settings.json
