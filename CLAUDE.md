@@ -11,11 +11,17 @@
 - 返答・コードのコメント・コミットメッセージは日本語
 - 案内するコマンドのパスは `\`（¥）ではなく `/` で書く
 
+## 会話の始まり（自動チェック）
+- `.claude/settings.json` の SessionStart フックで、会話を始めると `.claude/hooks/session-start.sh` が自動で動く。`git fetch`（GitHub の変更を確認するだけ。手元のファイルは変わらない）、`git status -sb`、`git log --oneline -10` の結果が会話の最初に渡される
+- GitHub に取り込んでいない変更があると表示されたら、作業の前に本人に `git pull` を頼む（Claude は pull しない）。push していない commit があるときも知らせる
+- 2台のPCで作業している。どちらのPCで何をしたかは、この自動チェックの `git log` で把握する
+- グラブルの素材名・属性の対応・入手先・用語は `docs/gbf-knowledge.md` にまとめてある。プリセットや素材名を扱う前に読む。新しく確かめたことは、ここに追記する
+
 ## 方針
 - フロントエンドだけで動く（素の JavaScript、ビルドなし）。ES Modules は使わず普通の `<script>` タグで読み込む（`index.html` をファイルとして直接開いても動くようにするため）
 - データはブラウザの localStorage に保存する。キーは `gbf-tools-v1`（素材と目標）、`gbf-tools-open`（折りたたみの開閉）、`gbf-tools-theme`（昼／夜）
 - ゲームの規約に反する機能（自動操作、通信の読み取り、非公開情報の取得）は入れない。数は手入力だけ
-- ゲームの画像やバックアップの JSON はリポジトリに入れない（`.gitignore` で除外済み）。素材のアイコンは使う人が自分のブラウザに登録する形
+- ゲームの画像やバックアップの JSON はリポジトリに入れない（`.gitignore` で除外済み。`.claude/settings.json` だけは例外として入れる）。素材のアイコンは使う人が自分のブラウザに登録する形
 - DOM は `js/util.js` の `el()` で作る（文字列は textContent で入れるので XSS の心配がない）。`innerHTML` は使わない
 
 ## ファイル
@@ -30,7 +36,7 @@
 - `server/server.mjs` … 端末間の同期機能を作り始めたところ（Node.js の http モジュール。今は `/api/hello` を返すだけ）。GitHub Pages ではサーバーは動かないので、公開ページとは別の場所で動かす必要がある
 
 ## プリセットのデータ
-- 出典は GameWith の各記事（`source` に URL）。WebFetch の要約は信用せず、curl で取った HTML の本文と照合してから入れる。数値の正確さを最重視する
+- 出典は GameWith の各記事（`source` に URL）。調べ方の注意と確認済みの事実は `docs/gbf-knowledge.md`。WebFetch の要約は信用せず、curl で取った HTML の本文と照合してから入れる。数値の正確さを最重視する
 - 正式名称が確認できない素材は仮の名前にし、`note` とユーザーへの報告で明示する。残っている仮の名前: 終末武器の「恩寵（属性）」（風以外）と「新恩寵（属性）」、光・闇の Lv240 の「光輪（属性・要確認）」
 - 構造は `{ id, group, sub?, name, source, note?, reqs: [{ name, qty }] }`。目標名は `presetLabel(p)`、まとめプリセットは `sumReqs` で作る
 - 素材名を変えたときは `PRESET_RENAMES` に旧名→新名を足す（保存済みデータを自動で移行するため）
