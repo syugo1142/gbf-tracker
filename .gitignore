@@ -5,3 +5,6 @@
 *.jpeg
 *.webp
 *.gif
+
+# Claude 用の説明（手元だけに置く）
+CLAUDE.md
