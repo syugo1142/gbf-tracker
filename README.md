@@ -65,7 +65,7 @@ js/
 ES Modulesは使わず、普通のscriptタグで読み込んでいます（ファイルを直接開いても動くようにするため）。
 
 ## 関連ツール
-- [グラブル天井計算](https://syugo1142.github.io/tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/tenjou-keisan)）: 宝晶石とチケットから、天井まであと何連かを計算する
+- [グラブル天井計算](https://syugo1142.github.io/gbf-tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/gbf-tenjou-keisan)）: 宝晶石とチケットから、天井まであと何連かを計算する
 
 ## 注意
 - 非公式のファンメイドツールです。株式会社Cygamesとは関係ありません。
