@@ -16,10 +16,10 @@
     <div class="card">
       <h2>目標</h2>
       <form id="preset-form" class="inline-form">
-        <select name="group" required></select>
+        <select name="group" required aria-label="コンテンツ"></select>
         <select name="sub" hidden></select>
-        <select name="preset" required disabled></select>
-        <label class="count-label">×<input name="count" type="number" min="1" value="1"></label>
+        <select name="preset" required disabled aria-label="プリセット"></select>
+        <label class="count-label">×<input name="count" type="number" min="1" value="1" aria-label="追加する数"></label>
         <button type="submit">プリセットから追加</button>
       </form>
       <p class="hint" id="preset-info"></p>
@@ -44,9 +44,9 @@
       <summary><h2>全素材の合計</h2></summary>
       <p class="hint">未完了の目標すべての必要数を素材ごとに合計した一覧です。複数の目標で使う素材の不足はここで確認できます。「1周平均」を入れると、不足分を集めるのに必要な周回数の目安が出ます。</p>
       <form id="material-form" class="inline-form">
-        <input name="name" placeholder="素材名（例: 〇〇の証）" required>
-        <input name="owned" type="number" min="0" placeholder="所持数" value="0">
-        <input name="perRun" type="number" min="0" step="0.01" placeholder="1周あたり平均ドロップ">
+        <label class="field field-name">素材名<input name="name" placeholder="例: 〇〇の証" required></label>
+        <label class="field">所持数<input name="owned" type="number" min="0" value="0"></label>
+        <label class="field">1周あたり平均ドロップ<input name="perRun" type="number" min="0" step="0.01" placeholder="例: 1.5"></label>
         <button type="submit">素材を追加</button>
       </form>
       <div class="table-wrap">
@@ -68,7 +68,8 @@
       <p>データはこのブラウザ内（localStorage）にだけ保存されています。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
       <div class="row-buttons">
         <button id="export-btn">JSONを書き出す</button>
-        <label class="file-button">JSONを読み込む<input type="file" id="import-file" accept="application/json" hidden></label>
+        <button type="button" id="import-btn">JSONを読み込む</button>
+        <input type="file" id="import-file" accept="application/json" hidden>
         <button id="reset-btn" class="danger">全データを削除</button>
       </div>
     </details>

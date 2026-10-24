@@ -1,29 +1,31 @@
 /* 空のテーマ（青空） */
 :root {
-  --sky-top: #3f8fd8;
-  --sky-bottom: #8fd0f7;
+  /* 文字と背景の明るさの差（コントラスト比）が 4.5 以上になる濃さにしている */
+  --sky-top: #1a62ad;
+  --sky-bottom: #2b70c2;
   --bg: #eef5fc;
   --card: #ffffff;
   --card-shadow: 0 2px 10px rgba(31, 70, 120, .08);
   --text: #1f2d4a;
-  --muted: #687792;
+  --muted: #56647e;
   --border: #d6e2f0;
   --field: #f7fafe;
-  --accent: #2b7bd0;
+  --accent: #2468b3;
   --accent-text: #ffffff;
   --gold: #d1a131;
   --gold-light: #f2d27a;
-  --good: #1f8a4c;
+  --good: #17703c;
   --bad: #c9362b;
   --good-bg: #e7f6ed;
   --bad-bg: #fbeaea;
-  --el-fire: #d9483b;
-  --el-water: #2f7fd9;
-  --el-earth: #b0782a;
-  --el-wind: #2e9e5b;
-  --el-light: #c9a21a;
+  /* 属性の色。アイコンの白い頭文字が読めるように濃くしている（光だけは明るい黄色に濃い文字） */
+  --el-fire: #c53a2e;
+  --el-water: #2468b3;
+  --el-earth: #8c5d1e;
+  --el-wind: #1f7a45;
+  --el-light: #e8c547;
   --el-dark: #7b4fc4;
-  --el-none: #7a8294;
+  --el-none: #636b7d;
 }
 
 * { box-sizing: border-box; }
@@ -95,13 +97,13 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
 button { cursor: pointer; background: var(--card); transition: background .15s, border-color .15s; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button[type="submit"], #export-btn {
-  background: linear-gradient(180deg, #3a8de0, #2b70c2);
+  background: linear-gradient(180deg, #2a73c4, #1f5fa8);
   color: var(--accent-text);
-  border-color: #2b70c2;
+  border-color: #1f5fa8;
   font-weight: bold;
   box-shadow: 0 1px 3px rgba(30, 90, 160, .3);
 }
-button[type="submit"]:hover:not(:disabled), #export-btn:hover { background: linear-gradient(180deg, #4a9aea, #2f7acf); }
+button[type="submit"]:hover:not(:disabled), #export-btn:hover { background: linear-gradient(180deg, #276fbe, #1c5aa0); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.danger, .danger { color: var(--bad); }
 button.icon { padding: 4px 9px; }
@@ -127,8 +129,11 @@ details { margin-top: 12px; }
 details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 
 .inline-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.inline-form input[name="name"] { flex: 1 1 200px; }
-.inline-form input[type="number"] { width: 160px; }
+/* 入力欄の上に小さく項目名を出す */
+.inline-form { align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 2px; font-size: .85rem; color: var(--muted); }
+.field-name { flex: 1 1 200px; }
+.inline-form .field input[type="number"] { width: 160px; }
 
 .req-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .req-row select { flex: 1; min-width: 0; }
@@ -194,7 +199,8 @@ input.num { width: 80px; }
 .target-body { padding: 0 14px 14px; border-top: 1px solid var(--border); }
 .target.ready { border-left-color: var(--good); }
 .target.ready > summary { background: var(--good-bg); }
-.target.done { opacity: .7; border-left-color: var(--el-none); }
+/* 完了済みは半透明にすると文字が薄くなるので、背景の色で区別する */
+.target.done { border-left-color: var(--el-none); background: var(--field); }
 .target-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .bar.small { height: 6px; margin: 8px 0 0; }
 .target-table { margin-top: 8px; }
@@ -239,15 +245,6 @@ details.card[open] > summary { margin-bottom: 12px; }
 .good { color: var(--good); font-weight: bold; }
 .bad { color: var(--bad); font-weight: bold; }
 
-.file-button {
-  display: inline-block;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 10px;
-  cursor: pointer;
-  background: var(--card);
-}
-
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
 .mat-label { display: flex; flex-direction: column; align-items: flex-start; }
@@ -276,7 +273,7 @@ details.card[open] > summary { margin-bottom: 12px; }
 .el-water { background: var(--el-water); }
 .el-earth { background: var(--el-earth); }
 .el-wind { background: var(--el-wind); }
-.el-light { background: var(--el-light); }
+.el-light { background: var(--el-light); color: var(--text); }
 .el-dark { background: var(--el-dark); }
 
 .icon-wrap { position: relative; display: inline-flex; }

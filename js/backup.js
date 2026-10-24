@@ -9,6 +9,11 @@ document.getElementById('export-btn').addEventListener('click', () => {
   URL.revokeObjectURL(a.href);
 });
 
+// ファイル選択欄は見た目を整えにくいので隠し、キーボードでも押せる普通のボタンから開く
+document.getElementById('import-btn').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+
 document.getElementById('import-file').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   e.target.value = '';

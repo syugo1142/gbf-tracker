@@ -146,6 +146,7 @@ const Tracker = (() => {
       const subs = [...new Set(items.map((p) => p.sub).filter(Boolean))];
       subLabel = { 十天衆: 'キャラ', 十賢者: 'キャラ', '天星器（十天衆加入）': '変更先の属性' }[groupSelect.value] || '武器';
       subSelect.hidden = subs.length === 0;
+      subSelect.setAttribute('aria-label', subLabel);
       subSelect.replaceChildren(
         el('option', { value: '', text: `${subLabel}を選択` }),
         ...subs.map((s) => el('option', { value: s, text: s })),
@@ -211,14 +212,14 @@ const Tracker = (() => {
   function addReqRow() {
     const row = el('div', { class: 'req-row' }, [
       materialSelect(),
-      el('input', { type: 'number', min: '1', placeholder: '個数' }),
-      el('button', { type: 'button', text: '×', class: 'icon', onclick: () => row.remove() }),
+      el('input', { type: 'number', min: '1', placeholder: '個数', 'aria-label': '個数' }),
+      el('button', { type: 'button', text: '×', class: 'icon', 'aria-label': 'この行を削除', onclick: () => row.remove() }),
     ]);
     document.getElementById('req-rows').append(row);
   }
 
   function materialSelect(selectedId = '') {
-    const select = el('select', {}, el('option', { value: '', text: '素材を選択' }));
+    const select = el('select', { 'aria-label': '素材' }, el('option', { value: '', text: '素材を選択' }));
     for (const m of app.state.materials) {
       select.append(el('option', { value: m.id, text: m.name, selected: m.id === selectedId }));
     }
