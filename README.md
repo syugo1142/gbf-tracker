@@ -52,6 +52,10 @@ js/
 ├─ tracker.js   # 素材トラッカー
 ├─ app.js       # データの保持
 └─ backup.js    # バックアップ
+docs/
+└─ gbf-knowledge.md  # 素材名や用語など、調べて確かめたグラブルの知識
+server/
+└─ server.mjs   # 端末間の同期機能（作成中。公開ページでは使っていない）
 ```
 ファイルを直接開いても動くように、ES Modulesは使わず、普通のscriptタグで読み込んでいます。
 

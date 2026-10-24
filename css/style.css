@@ -17,7 +17,6 @@
   --good: #17703c;
   --bad: #c9362b;
   --good-bg: #e7f6ed;
-  --bad-bg: #fbeaea;
   /* 属性の色。アイコンの白い頭文字が読めるように濃くしている（光だけは明るい黄色に濃い文字） */
   --el-fire: #c53a2e;
   --el-water: #2468b3;
@@ -242,8 +241,6 @@ details.card[open] > summary { margin-bottom: 12px; }
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
   transition: width .25s;
 }
-.good { color: var(--good); font-weight: bold; }
-.bad { color: var(--bad); font-weight: bold; }
 
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
@@ -298,5 +295,4 @@ details.card[open] > summary { margin-bottom: 12px; }
 @media (max-width: 600px) {
   main { padding: 14px 12px 32px; }
   .card { padding: 14px; }
-  .app-header::after { display: none; }
 }

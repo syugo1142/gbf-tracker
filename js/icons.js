@@ -66,5 +66,5 @@ const MaterialIcon = (() => {
     });
   }
 
-  return { create, fileToIcon, pickFile, elementOf };
+  return { create, fileToIcon, pickFile };
 })();

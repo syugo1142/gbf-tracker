@@ -527,5 +527,5 @@ const Tracker = (() => {
     commit();
   }
 
-  return { init, render };
+  return { init };
 })();
