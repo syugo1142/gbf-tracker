@@ -13,20 +13,20 @@
 
 ## 方針
 - フロントエンドだけで動く（素の JavaScript、ビルドなし）。ES Modules は使わず普通の `<script>` タグで読み込む（`index.html` をファイルとして直接開いても動くようにするため）
-- データはブラウザの localStorage に保存する。キーは `gbf-tools-v1`（素材と目標）、`gbf-tools-open`（折りたたみの開閉）、`gbf-tools-theme`（昼／夜）
+- データはブラウザの localStorage に保存する。キーは `gbf-tools-v1`（素材と目標）、`gbf-tools-open`（折りたたみの開閉）。昼／夜の切り替えは廃止した（古い `gbf-tools-theme` は `app.js` で消す）
 - ゲームの規約に反する機能（自動操作、通信の読み取り、非公開情報の取得）は入れない。数は手入力だけ
 - ゲームの画像やバックアップの JSON はリポジトリに入れない（`.gitignore` で除外済み）。素材のアイコンは使う人が自分のブラウザに登録する形
 - DOM は `js/util.js` の `el()` で作る（文字列は textContent で入れるので XSS の心配がない）。`innerHTML` は使わない
 
 ## ファイル
 - `index.html` … 画面（目標、全素材の合計、バックアップ）
-- `css/style.css` … 空のテーマ。既定は夜空（`:root`）、`data-theme="light"` で青空
+- `css/style.css` … 空のテーマ（青空）。色は `:root` の変数で決める
 - `js/storage.js` … 保存と読み込み。古いデータにあった天井計算の値は `moveSparkData` で天井計算側のキー（`gbf-spark-v1`）へ一度だけ移す
 - `js/presets.js` … 目標プリセット（必要素材データ）。`PRESET_CATEGORIES`・`CHARACTER_GROUPS` でキャラ／武器に分ける。`PRESET_RENAMES` は仮の素材名から正式名称への移行表
 - `js/sources.js` … 素材の入手先（素材名の下に表示）
 - `js/icons.js` … 素材アイコン（登録画像を 64×64 の webp に縮めて保存）
 - `js/tracker.js` … 素材トラッカー本体
-- `js/app.js` … 状態の保持と昼／夜の切り替え。`js/backup.js` … JSON の書き出し／読み込み
+- `js/app.js` … 状態の保持。`js/backup.js` … JSON の書き出し／読み込み
 - `server/server.mjs` … 端末間の同期機能を作り始めたところ（Node.js の http モジュール。今は `/api/hello` を返すだけ）。GitHub Pages ではサーバーは動かないので、公開ページとは別の場所で動かす必要がある
 
 ## プリセットのデータ
