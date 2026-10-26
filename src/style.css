@@ -128,12 +128,7 @@ button.link {
 details { margin-top: 12px; }
 details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 
-.inline-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-/* 入力欄の上に小さく項目名を出す */
-.inline-form { align-items: flex-end; }
-.field { display: flex; flex-direction: column; gap: 2px; font-size: .85rem; color: var(--muted); }
-.field-name { flex: 1 1 200px; }
-.inline-form .field input[type="number"] { width: 160px; }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
 
 .req-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .req-row .req-name { flex: 1; min-width: 0; }
@@ -245,9 +240,7 @@ details.card[open] > summary { margin-bottom: 12px; }
 
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
-.mat-label { display: flex; flex-direction: column; align-items: flex-start; }
-.mat-source { color: var(--muted); font-size: .75rem; line-height: 1.3; white-space: normal; max-width: 22em; }
-.mat-icon {
+.mat-label { display: flex; flex-direction: column; align-items: flex-start; }.mat-icon {
   --size: 32px;
   display: inline-flex;
   align-items: center;

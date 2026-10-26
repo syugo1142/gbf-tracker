@@ -2,7 +2,6 @@ import { el, byId, formField, uid, toNum, formatNum } from './util.ts';
 import type { Props, Child } from './util.ts';
 import type { AppState, Category, Material, Requirement, Target } from './storage.ts';
 import { MaterialIcon } from './icons.ts';
-import { MaterialSource } from './sources.ts';
 import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.ts';
 import type { Preset } from './presets.ts';
 
@@ -46,28 +45,6 @@ export const Tracker = (() => {
 
   function init(appRef: App): void {
     app = appRef;
-
-    const materialForm = byId('material-form', HTMLFormElement);
-    const nameInput = formField(materialForm, 'name', HTMLInputElement);
-    const ownedInput = formField(materialForm, 'owned', HTMLInputElement);
-    const perRunInput = formField(materialForm, 'perRun', HTMLInputElement);
-    materialForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = nameInput.value.trim();
-      if (!name) return;
-      if (app.state.materials.some((m) => m.name === name)) {
-        alert('同じ名前の素材がすでにあります');
-        return;
-      }
-      app.state.materials.push({
-        id: uid(),
-        name,
-        owned: toNum(ownedInput.value),
-        perRun: toNum(perRunInput.value),
-      });
-      materialForm.reset();
-      commit();
-    });
 
     byId('add-req-row', HTMLButtonElement).addEventListener('click', () => addReqRow());
 
@@ -330,7 +307,6 @@ export const Tracker = (() => {
     });
     perRunInput.addEventListener('change', () => { m.perRun = toNum(perRunInput.value); commit(); });
     const step = (d: number) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
-    const source = MaterialSource.of(m.name);
 
     return el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
       el('td', {}, el('div', { class: 'mat-name' }, [
@@ -352,7 +328,6 @@ export const Tracker = (() => {
             type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
             onclick: () => renameMaterial(m),
           }),
-          source ? el('small', { class: 'mat-source', text: `入手: ${source}` }) : null,
         ]),
         sharedWith.length ? el('span', {
           class: 'badge shared', text: '共通',
