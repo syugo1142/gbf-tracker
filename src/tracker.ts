@@ -68,6 +68,7 @@ export const Tracker = (() => {
       const first = findMaterial(merged[0].materialId)?.name ?? '';
       const name = merged.length > 1 ? `${first} ほか${merged.length - 1}種` : first;
       app.state.targets.push({ id: uid(), name, done: false, reqs: merged });
+      showCategory('その他');
       targetForm.reset();
       byId('req-rows', HTMLDivElement).replaceChildren();
       addReqRow();
@@ -215,6 +216,7 @@ export const Tracker = (() => {
       done: false,
       reqs: mergeReqs(reqs),
     });
+    showCategory(presetCategory(preset));
     commit();
   }
 
@@ -272,81 +274,122 @@ export const Tracker = (() => {
   }
 
   function renderMaterials(): void {
-    // 表の <tbody>（index.html に1つだけある）
-    const tbody = byId('material-table', HTMLTableElement).tBodies[0];
+    const grid = byId('material-grid', HTMLDivElement);
     const totals = requiredTotals();
-    tbody.replaceChildren();
+    grid.replaceChildren();
 
     if (app.state.materials.length === 0) {
-      tbody.append(el('tr', {}, el('td', { colSpan: 7, class: 'empty', text: 'まだ素材がありません。' })));
+      grid.append(el('p', { class: 'empty', text: 'まだ素材がありません。' }));
       return;
     }
     for (const m of app.state.materials) {
-      tbody.append(materialRow(m, totals.get(m.id) || 0, { deletable: true }));
+      grid.append(materialTile(m, totals.get(m.id) || 0));
     }
   }
 
-  // 素材1行分。全素材の合計表と、各目標の中の表で使う
-  // deletable は削除ボタンを出すか、sharedWith はこの素材を使うほかの目標の名前
-  function materialRow(
-    m: Material,
-    need: number,
-    { deletable = false, sharedWith = [] }: { deletable?: boolean; sharedWith?: string[] } = {},
-  ): HTMLTableRowElement {
-    const short = Math.max(0, need - m.owned);
-    const runs = short === 0 ? '—' : m.perRun > 0 ? `約${formatNum(Math.ceil(short / m.perRun))}周` : '—';
+  // ---------- 素材1つ分の部品（全素材の合計のタイルと、各目標の中の表で使う） ----------
 
-    const ownedInput = el('input', {
+  // 不足していれば short、足りていれば ok（どの目標にも使っていなければ空）。色分けに使う
+  function statusClass(need: number, short: number): string {
+    return short > 0 ? 'short' : need > 0 ? 'ok' : '';
+  }
+
+  // 不足分を集める周回数の目安
+  function runsText(m: Material, short: number): string {
+    return short > 0 && m.perRun > 0 ? `約${formatNum(Math.ceil(short / m.perRun))}周` : '—';
+  }
+
+  // アイコン（クリックで画像を登録・変更）と、画像を外すボタン
+  function iconControl(m: Material, size?: number): HTMLSpanElement {
+    return el('span', { class: 'icon-wrap' }, [
+      el('button', {
+        type: 'button', class: 'icon-button',
+        title: m.icon ? 'クリックで画像を変更' : 'クリックで画像を登録',
+        'aria-label': `${m.name}の画像を${m.icon ? '変更' : '登録'}`,
+        onclick: () => setMaterialIcon(m),
+      }, MaterialIcon.create(m, size)),
+      m.icon ? el('button', {
+        type: 'button', class: 'icon-remove', text: '✕',
+        title: '画像を外す', 'aria-label': `${m.name}の画像を外す`,
+        onclick: () => removeMaterialIcon(m),
+      }) : null,
+    ]);
+  }
+
+  // 素材名（クリックで名前を変更）
+  function nameLabel(m: Material): HTMLSpanElement {
+    return el('span', { class: 'mat-label' }, [
+      el('button', {
+        type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
+        onclick: () => renameMaterial(m),
+      }),
+    ]);
+  }
+
+  // 所持数の入力欄と −・+ ボタン
+  function ownedStepper(m: Material): HTMLDivElement {
+    const input = el('input', {
       type: 'number', min: '0', value: m.owned, class: 'num',
       'aria-label': `${m.name}の所持数`,
     });
-    ownedInput.addEventListener('change', () => { m.owned = toNum(ownedInput.value); commit(); });
-    const perRunInput = el('input', {
+    input.addEventListener('change', () => { m.owned = toNum(input.value); commit(); });
+    const step = (d: number) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
+    return el('div', { class: 'stepper' }, [
+      el('button', { type: 'button', class: 'icon', text: '−', 'aria-label': `${m.name}を1減らす`, onclick: step(-1) }),
+      input,
+      el('button', { type: 'button', class: 'icon', text: '+', 'aria-label': `${m.name}を1増やす`, onclick: step(1) }),
+    ]);
+  }
+
+  // 1周あたりの平均ドロップ数の入力欄
+  function perRunInput(m: Material): HTMLInputElement {
+    const input = el('input', {
       type: 'number', min: '0', step: '0.01', value: m.perRun || '', class: 'num',
       'aria-label': `${m.name}の1周あたり平均ドロップ`,
     });
-    perRunInput.addEventListener('change', () => { m.perRun = toNum(perRunInput.value); commit(); });
-    const step = (d: number) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
+    input.addEventListener('change', () => { m.perRun = toNum(input.value); commit(); });
+    return input;
+  }
 
-    return el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
+  // 全素材の合計の、素材1つ分のタイル
+  function materialTile(m: Material, need: number): HTMLDivElement {
+    const short = Math.max(0, need - m.owned);
+    return el('div', { class: `mat-tile ${statusClass(need, short)}` }, [
+      el('div', { class: 'mat-name' }, [
+        iconControl(m, 40),
+        nameLabel(m),
+        el('button', { type: 'button', class: 'icon danger mat-delete', text: '削除', onclick: () => deleteMaterial(m) }),
+      ]),
+      el('div', { class: 'mat-stats' }, [
+        el('span', { text: `必要 ${formatNum(need)}` }),
+        el('span', { class: 'short-cell', text: `不足 ${formatNum(short)}` }),
+      ]),
+      el('div', { class: 'mat-field' }, [el('span', { class: 'mat-field-label', text: '所持' }), ownedStepper(m)]),
+      el('div', { class: 'mat-field' }, [
+        el('span', { class: 'mat-field-label', text: '1周平均' }),
+        perRunInput(m),
+        el('span', { class: 'mat-runs', text: runsText(m, short) }),
+      ]),
+    ]);
+  }
+
+  // 目標の中の表の、素材1行分。sharedWith はこの素材を使うほかの目標の名前
+  function materialRow(m: Material, need: number, sharedWith: string[]): HTMLTableRowElement {
+    const short = Math.max(0, need - m.owned);
+    return el('tr', { class: statusClass(need, short) }, [
       el('td', {}, el('div', { class: 'mat-name' }, [
-        el('span', { class: 'icon-wrap' }, [
-          el('button', {
-            type: 'button', class: 'icon-button',
-            title: m.icon ? 'クリックで画像を変更' : 'クリックで画像を登録',
-            'aria-label': `${m.name}の画像を${m.icon ? '変更' : '登録'}`,
-            onclick: () => setMaterialIcon(m),
-          }, MaterialIcon.create(m)),
-          m.icon ? el('button', {
-            type: 'button', class: 'icon-remove', text: '✕',
-            title: '画像を外す', 'aria-label': `${m.name}の画像を外す`,
-            onclick: () => removeMaterialIcon(m),
-          }) : null,
-        ]),
-        el('span', { class: 'mat-label' }, [
-          el('button', {
-            type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
-            onclick: () => renameMaterial(m),
-          }),
-        ]),
+        iconControl(m),
+        nameLabel(m),
         sharedWith.length ? el('span', {
           class: 'badge shared', text: '共通',
           title: `ほかの目標でも使用: ${sharedWith.join('、')}`,
         }) : null,
       ])),
-      el('td', {}, el('div', { class: 'stepper' }, [
-        el('button', { type: 'button', class: 'icon', text: '−', 'aria-label': `${m.name}を1減らす`, onclick: step(-1) }),
-        ownedInput,
-        el('button', { type: 'button', class: 'icon', text: '+', 'aria-label': `${m.name}を1増やす`, onclick: step(1) }),
-      ])),
+      el('td', {}, ownedStepper(m)),
       el('td', { text: formatNum(need) }),
-      el('td', { class: 'short-cell', text: short > 0 ? formatNum(short) : '0' }),
-      el('td', {}, perRunInput),
-      el('td', { text: runs }),
-      deletable ? el('td', {}, el('button', {
-        type: 'button', class: 'icon danger', text: '削除',
-        onclick: () => deleteMaterial(m),
-      })) : null,
+      el('td', { class: 'short-cell', text: formatNum(short) }),
+      el('td', {}, perRunInput(m)),
+      el('td', { text: runsText(m, short) }),
     ]);
   }
 
@@ -399,9 +442,41 @@ export const Tracker = (() => {
     commit();
   }
 
+  // 目標の一覧で選んでいるタブ。「すべて」か分類の名前。再読み込みしても保つため、この閲覧者のブラウザに覚えておく
+  type Tab = Category | 'すべて';
+  const TAB_KEY = 'gbf-tools-tab';
+  let currentTab: Tab = loadTab();
+
+  function loadTab(): Tab {
+    try {
+      // 保存されている値が分類の名前のときだけ使う
+      const saved = localStorage.getItem(TAB_KEY);
+      return PRESET_CATEGORIES.find((c) => c === saved) ?? 'すべて';
+    } catch {
+      return 'すべて';
+    }
+  }
+
+  function saveTab(tab: Tab): void {
+    currentTab = tab;
+    try { localStorage.setItem(TAB_KEY, tab); } catch {}
+  }
+
+  function selectTab(tab: Tab): void {
+    saveTab(tab);
+    renderTargets();
+  }
+
+  // 目標を追加したとき、ほかの分類のタブを開いていたら、追加した目標が見えるタブに切り替える
+  function showCategory(category: Category): void {
+    if (currentTab !== 'すべて' && currentTab !== category) saveTab(category);
+  }
+
   function renderTargets(): void {
     const list = byId('target-list', HTMLDivElement);
+    const tabs = byId('target-tabs', HTMLDivElement);
     list.replaceChildren();
+    tabs.replaceChildren();
 
     if (app.state.targets.length === 0) {
       list.append(el('p', { class: 'empty', text: 'まだ目標がありません。上のフォームから追加してください。' }));
@@ -410,19 +485,38 @@ export const Tracker = (() => {
 
     const active = app.state.targets.filter((t) => !t.done);
     const done = app.state.targets.filter((t) => t.done);
-    // キャラ・武器・その他（自分で素材を指定した目標）に分けて並べる
-    for (const category of PRESET_CATEGORIES) {
-      const items = active.filter((t) => categoryOf(t) === category);
-      if (items.length === 0) continue;
-      list.append(el('h3', { class: 'target-group' }, [category, el('span', { class: 'target-group-count', text: `${items.length}件` })]));
-      for (const t of items) list.append(targetCard(t, active));
+    // キャラ・武器・その他（自分で素材を指定した目標）に分ける。未完了の目標がある分類だけタブにする
+    const groups = PRESET_CATEGORIES
+      .map((category) => ({ category, items: active.filter((t) => categoryOf(t) === category) }))
+      .filter((g) => g.items.length > 0);
+    // 選んでいた分類の目標がなくなったときは「すべて」に戻す
+    if (currentTab !== 'すべて' && !groups.some((g) => g.category === currentTab)) saveTab('すべて');
+    const tab = currentTab;
+
+    if (active.length) {
+      // aria-pressed は、押されている（選ばれている）ボタンを読み上げソフトに伝える
+      const tabButton = (name: Tab, count: number) => el('button', {
+        type: 'button', class: 'tab', 'aria-pressed': String(name === tab), onclick: () => selectTab(name),
+      }, [name, el('span', { class: 'tab-count', text: String(count) })]);
+      tabs.append(tabButton('すべて', active.length), ...groups.map((g) => tabButton(g.category, g.items.length)));
+    }
+
+    if (tab === 'すべて') {
+      // 「すべて」では分類ごとに見出しを付けて並べる
+      for (const g of groups) {
+        list.append(el('h3', { class: 'target-group' }, [g.category, el('span', { class: 'target-group-count', text: `${g.items.length}件` })]));
+        for (const t of g.items) list.append(targetCard(t, active));
+      }
+    } else {
+      for (const t of groups.find((g) => g.category === tab)?.items ?? []) list.append(targetCard(t, active));
     }
     if (active.length === 0) list.append(el('p', { class: 'empty', text: '未完了の目標はありません。' }));
 
-    if (done.length) {
+    const shownDone = tab === 'すべて' ? done : done.filter((t) => categoryOf(t) === tab);
+    if (shownDone.length) {
       list.append(details('done-list', { class: 'done-list' }, [
-        el('summary', { text: `完了済み（${done.length}件）` }),
-        ...done.map((t) => targetCard(t, active)),
+        el('summary', { text: `完了済み（${shownDone.length}件）` }),
+        ...shownDone.map((t) => targetCard(t, active)),
       ]));
     }
   }
@@ -480,7 +574,7 @@ export const Tracker = (() => {
         const sharedWith = active
           .filter((o) => o !== t && o.reqs.some((x) => x.materialId === m.id))
           .map((o) => o.name);
-        return materialRow(m, r.qty, { sharedWith });
+        return materialRow(m, r.qty, sharedWith);
       });
       body = el('div', { class: 'table-wrap' }, el('table', { class: 'target-table' }, [
         el('thead', {}, el('tr', {}, ['素材', '所持', '必要', '不足', '1周平均', '目安周回'].map((h) => el('th', { text: h })))),

@@ -56,14 +56,12 @@ body {
   letter-spacing: .04em;
   text-shadow: 0 1px 3px rgba(0, 40, 90, .35);
 }
-.app-header h1::before { content: '✦ '; color: var(--gold-light); }
 
 main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
 .app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .85rem; }
 
 /* ---------- カード ---------- */
 .card {
-  position: relative;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -71,17 +69,8 @@ main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
   margin-bottom: 18px;
   box-shadow: var(--card-shadow);
 }
-/* 上辺の金のライン */
-.card::before {
-  content: '';
-  position: absolute;
-  left: 18px; right: 18px; top: -1px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
-}
-.card h2 { margin: 0 0 14px; font-size: 1.1rem; }
-.card h2::before { content: '◆ '; color: var(--gold); font-size: .85em; }
+/* 見出しは飾りを付けず、大きさで目立たせる。金色は進捗バーにだけ使う（天井計算と同じ） */
+.card h2 { margin: 0 0 14px; font-size: 1.25rem; }
 
 /* ---------- 入力・ボタン ---------- */
 input, select, button {
@@ -142,8 +131,8 @@ table { width: 100%; border-collapse: collapse; }
 th, td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
 th { color: var(--muted); font-weight: normal; font-size: .85rem; }
 tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
-tr.short .short-cell { color: var(--bad); font-weight: bold; }
-tr.ok .short-cell { color: var(--good); font-weight: bold; }
+.short .short-cell { color: var(--bad); font-weight: bold; }
+.ok .short-cell { color: var(--good); font-weight: bold; }
 input.num { width: 80px; }
 
 .stepper { display: flex; align-items: center; gap: 4px; }
@@ -164,8 +153,15 @@ input.num { width: 80px; }
   color: var(--muted);
 }
 .target-group-count { font-size: .8rem; font-weight: normal; }
-.list-tools { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.list-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 16px; }
 .list-tools button { font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
+
+/* 分類のタブ。左に寄せ、「すべて開く」などは右に残す */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
+.list-tools .tab { font-size: .95rem; padding: 4px 14px; }
+.tab-count { margin-left: 6px; font-size: .8rem; color: var(--muted); }
+.tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: bold; }
+.tab[aria-pressed="true"] .tab-count { color: inherit; }
 
 .target {
   margin: 0;
@@ -217,6 +213,27 @@ input.num { width: 80px; }
 .badge.shared { color: var(--accent); border-color: var(--accent); background: none; cursor: help; }
 
 /* 全素材の合計（折りたたみカード） */
+/* 素材ごとのタイルを、画面の幅に合わせて何列かに並べる */
+.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.mat-tile {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+.mat-tile.short { border-left-color: var(--bad); }
+.mat-tile.ok { border-left-color: var(--good); background: var(--good-bg); }
+.mat-tile .mat-label { flex: 1; min-width: 0; }
+.mat-delete { font-size: .85rem; padding: 2px 8px; }
+.mat-stats { display: flex; gap: 14px; }
+.mat-field { display: flex; align-items: center; gap: 8px; }
+.mat-field-label { flex: none; width: 4.5em; color: var(--muted); font-size: .9rem; }
+.mat-runs { color: var(--muted); font-size: .9rem; }
+
 details.card { margin-top: 0; }
 details.card > summary { margin: 0; color: var(--text); }
 details.card > summary h2 { display: inline; margin: 0; }
@@ -240,7 +257,8 @@ details.card[open] > summary { margin-bottom: 12px; }
 
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
-.mat-label { display: flex; flex-direction: column; align-items: flex-start; }.mat-icon {
+.mat-label { display: flex; flex-direction: column; align-items: flex-start; }
+.mat-icon {
   --size: 32px;
   display: inline-flex;
   align-items: center;
