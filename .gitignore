@@ -1,6 +1,10 @@
 *.json
+!package.json
+!package-lock.json
+!tsconfig.json
 *.png
 *.jpg
 *.jpeg
 *.webp
+node_modules/
 CLAUDE.md

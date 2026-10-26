@@ -53,9 +53,19 @@ js/
 ├─ app.js       # データの保持
 └─ backup.js    # バックアップ
 server/
-└─ server.mjs   # 端末間の同期機能（作成中。公開ページでは使っていない）
+└─ server.ts    # 端末間の同期機能（作成中。公開ページでは使っていない）
+package.json    # サーバーの起動と型チェックのコマンド、開発用の道具
+tsconfig.json   # TypeScript の型チェックの設定
 ```
 ファイルを直接開いても動くように、ES Modulesは使わず、普通のscriptタグで読み込んでいます。
+
+## 同期サーバー（作成中）
+画面とは別に、端末間でデータを同期するためのサーバーをTypeScriptで作っています。Node.js 24 以降が必要です。
+```
+npm ci            # 開発用の道具（TypeScript など）を入れる
+npm start         # サーバーを起動する（http://localhost:3000/api/hello）
+npm run typecheck # 型の間違いがないか確かめる
+```
 
 ## 関連ツール
 - [グラブル天井計算](https://syugo1142.github.io/gbf-tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/gbf-tenjou-keisan)）: 宝晶石とチケットから、天井までの残りを計算する

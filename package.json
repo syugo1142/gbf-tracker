@@ -1,0 +1,16 @@
+{
+  "name": "gbf-tracker",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node server/server.ts",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2"
+  }
+}
