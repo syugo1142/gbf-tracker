@@ -55,19 +55,20 @@ index.html
 src/
 ├─ main.js      # 画面の入口（各ファイルを読み込んで起動する）
 ├─ style.css    # 見た目
-├─ storage.js   # localStorage への保存と読み込み
-├─ util.js      # DOM 生成ヘルパーなど
+├─ storage.ts   # localStorage への保存と読み込み、保存データの型
+├─ util.ts      # DOM 生成ヘルパーなど
 ├─ icons.js     # 素材のアイコン画像
 ├─ presets.js   # 目標プリセット（必要素材データ）
 ├─ sources.js   # 素材の入手先
 ├─ tracker.js   # 素材トラッカー
-├─ app.js       # データの保持
-└─ backup.js    # バックアップ
+├─ app.ts       # データの保持
+├─ backup.js    # バックアップ
+└─ tsconfig.json # 画面用の TypeScript の設定（ブラウザ向け）
 server/
 └─ server.ts    # 端末間の同期機能（作成中。公開ページでは使っていない）
 package.json    # コマンドの一覧と、開発用の道具
 vite.config.ts  # Vite の設定
-tsconfig.json   # TypeScript の型チェックの設定
+tsconfig.json   # TypeScript の型チェックの設定（サーバー・Vite の設定ファイル向け）
 .github/workflows/
 ├─ deploy.yml    # push のたびにビルドして GitHub Pages に公開する
 └─ typecheck.yml # push のたびに型チェックを実行する

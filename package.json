@@ -10,7 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/server.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc && tsc -p src"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

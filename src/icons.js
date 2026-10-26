@@ -1,4 +1,4 @@
-import { el } from './util.js';
+import { el } from './util.ts';
 
 // 素材アイコン: 登録した画像があればそれを、なければ属性の色＋頭文字のアイコンを表示する
 export const MaterialIcon = (() => {

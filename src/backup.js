@@ -1,6 +1,6 @@
-import { el } from './util.js';
-import { AppStorage } from './storage.js';
-import { app } from './app.js';
+import { el } from './util.ts';
+import { AppStorage } from './storage.ts';
+import { app } from './app.ts';
 
 // バックアップ
 document.getElementById('export-btn').addEventListener('click', () => {
