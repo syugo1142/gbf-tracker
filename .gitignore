@@ -1,10 +1,6 @@
-# 公開リポジトリに入れないもの（バックアップのJSONと、ゲームから保存した画像）
 *.json
 *.png
 *.jpg
 *.jpeg
 *.webp
-*.gif
-
-# Claude 用の説明（手元だけに置く）
 CLAUDE.md
