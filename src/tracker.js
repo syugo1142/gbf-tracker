@@ -1,5 +1,10 @@
+import { el, uid, toNum, formatNum } from './util.js';
+import { MaterialIcon } from './icons.js';
+import { MaterialSource } from './sources.js';
+import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.js';
+
 // 素材トラッカー
-const Tracker = (() => {
+export const Tracker = (() => {
   let app; // { state, save }
 
   // 開いている目標などの ID。再描画しても開閉状態を保つため、この閲覧者のブラウザに覚えておく

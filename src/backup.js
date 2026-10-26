@@ -1,3 +1,7 @@
+import { el } from './util.js';
+import { AppStorage } from './storage.js';
+import { app } from './app.js';
+
 // バックアップ
 document.getElementById('export-btn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(app.state, null, 2)], { type: 'application/json' });

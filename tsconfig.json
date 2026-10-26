@@ -9,5 +9,5 @@
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["server"]
+  "include": ["server", "vite.config.ts"]
 }

@@ -16,8 +16,6 @@
 ## 使い方
 https://syugo1142.github.io/gbf-tracker/ を開きます。
 
-手元で使う場合は、このリポジトリをダウンロードして（Code → Download ZIP、または `git clone`）、`index.html` をブラウザで開きます。
-
 データはブラウザのlocalStorageに保存し、サーバーには送りません。ブラウザのデータを消すと消えるので、「バックアップ」から書き出しておいてください。
 
 ## 収録プリセット
@@ -39,11 +37,24 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - アップデートで必要数が変わることがあります。実際の数はゲーム内で確認してください
 - 次の素材は正式名称を確認できていないため、仮の名前です: 終末武器の「恩寵（属性）」（風以外）と「新恩寵（属性）」、光・闇の Lv240 の「光輪」
 
+## 開発
+画面は [Vite](https://vite.dev/) でビルドしています。Node.js 24 以降が必要です。
+```
+npm ci            # 開発用の道具（Vite、TypeScript など）を入れる
+npm run dev       # 開発用サーバーを起動する（http://localhost:5173/）
+npm run build     # 公開用のファイルを dist/ に作る
+npm run preview   # ビルドしたものを手元で確かめる
+npm start         # 同期サーバーを起動する（作成中。http://localhost:3000/api/hello）
+npm run typecheck # 型の間違いがないか確かめる
+```
+main に push すると、GitHub Actions がビルドして GitHub Pages に公開します。
+
 ## ファイル構成
 ```
 index.html
-css/style.css
-js/
+src/
+├─ main.js      # 画面の入口（各ファイルを読み込んで起動する）
+├─ style.css    # 見た目
 ├─ storage.js   # localStorage への保存と読み込み
 ├─ util.js      # DOM 生成ヘルパーなど
 ├─ icons.js     # 素材のアイコン画像
@@ -54,19 +65,12 @@ js/
 └─ backup.js    # バックアップ
 server/
 └─ server.ts    # 端末間の同期機能（作成中。公開ページでは使っていない）
-package.json    # サーバーの起動と型チェックのコマンド、開発用の道具
+package.json    # コマンドの一覧と、開発用の道具
+vite.config.ts  # Vite の設定
 tsconfig.json   # TypeScript の型チェックの設定
 .github/workflows/
-└─ typecheck.yml # push のたびに GitHub Actions で型チェックを実行する
-```
-ファイルを直接開いても動くように、ES Modulesは使わず、普通のscriptタグで読み込んでいます。
-
-## 同期サーバー（作成中）
-画面とは別に、端末間でデータを同期するためのサーバーをTypeScriptで作っています。Node.js 24 以降が必要です。
-```
-npm ci            # 開発用の道具（TypeScript など）を入れる
-npm start         # サーバーを起動する（http://localhost:3000/api/hello）
-npm run typecheck # 型の間違いがないか確かめる
+├─ deploy.yml    # push のたびにビルドして GitHub Pages に公開する
+└─ typecheck.yml # push のたびに型チェックを実行する
 ```
 
 ## 関連ツール

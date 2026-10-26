@@ -6,7 +6,7 @@
 // 素材名は GameWith / 神ゲー攻略 / ゲーム乱舞 のトレジャー一覧と照合済み（2026-10-06）。
 const GW = 'https://xn--bck3aza1a2if6kra4ee0hf.gamewith.jp/article/show/';
 
-const PRESETS = (() => {
+export const PRESETS = (() => {
   const ELEMENTS = ['火', '水', '土', '風', '光', '闇'];
   const GENE = { 火: 'ファイア・ジーン', 水: 'アクア・ジーン', 土: 'アース・ジーン', 風: 'ウィンド・ジーン', 光: 'ホーリー・ジーン', 闇: 'ダーク・ジーン' };
   const SCALE = { 火: '赤竜鱗', 水: '青竜鱗', 土: '地竜鱗', 風: '風竜鱗', 光: '白竜鱗', 闇: '黒竜鱗' };
@@ -752,7 +752,7 @@ const PRESETS = (() => {
 })();
 
 // 以前の版で仮の名前にしていた素材の、正式名称への対応表（保存データの移行用）
-const PRESET_RENAMES = (() => {
+export const PRESET_RENAMES = (() => {
   const map = {};
   const tenten = [
     ['ウーノ', '一番', '槍'], ['ソーン', '二番', '弓'], ['サラーサ', '三番', '斧'], ['カトル', '四番', '短剣'],
@@ -783,14 +783,14 @@ const PRESET_RENAMES = (() => {
 })();
 
 // コンテンツの大分類。プリセットの選択肢と目標リストをこの順に分けて並べる
-const PRESET_CATEGORIES = ['キャラ', '武器', 'その他'];
+export const PRESET_CATEGORIES = ['キャラ', '武器', 'その他'];
 const CHARACTER_GROUPS = ['十天衆', '十賢者', '天星器（十天衆加入）'];
 
-function presetCategory(p) {
+export function presetCategory(p) {
   return CHARACTER_GROUPS.includes(p.group) ? 'キャラ' : '武器';
 }
 
 // 目標に付ける名前（キャラ名などの sub があれば「ウーノ：最終：銀の依代 最終解放」のように前に付ける）
-function presetLabel(p) {
+export function presetLabel(p) {
   return p.sub ? `${p.sub}：${p.name}` : p.name;
 }

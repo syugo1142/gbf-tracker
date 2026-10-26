@@ -1,5 +1,7 @@
+import { el } from './util.js';
+
 // 素材アイコン: 登録した画像があればそれを、なければ属性の色＋頭文字のアイコンを表示する
-const MaterialIcon = (() => {
+export const MaterialIcon = (() => {
   const ICON_SIZE = 64; // 保存する画像の一辺(px)
 
   // 素材名から属性を推定するためのキーワード。上から順に調べ、最初に当たった属性にする

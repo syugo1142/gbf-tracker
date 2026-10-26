@@ -1,5 +1,5 @@
 // localStorage への保存・読み込み
-const AppStorage = (() => {
+export const AppStorage = (() => {
   const KEY = 'gbf-tools-v1';
 
   function defaults() {

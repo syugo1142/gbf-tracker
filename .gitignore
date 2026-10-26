@@ -7,4 +7,5 @@
 *.jpeg
 *.webp
 node_modules/
+dist/
 CLAUDE.md

@@ -1,5 +1,7 @@
-// アプリ全体: 状態の保持。初期化は HTML の最後で行う
-const app = {
+import { AppStorage } from './storage.js';
+
+// アプリ全体: 状態の保持。初期化は main.js で行う
+export const app = {
   state: AppStorage.load(),
   save() { return AppStorage.save(this.state); },
 };
