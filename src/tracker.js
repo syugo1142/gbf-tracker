@@ -1,7 +1,7 @@
 import { el, uid, toNum, formatNum } from './util.ts';
 import { MaterialIcon } from './icons.ts';
-import { MaterialSource } from './sources.js';
-import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.js';
+import { MaterialSource } from './sources.ts';
+import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.ts';
 
 // 素材トラッカー
 export const Tracker = (() => {

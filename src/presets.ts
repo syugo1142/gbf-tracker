@@ -4,28 +4,64 @@
 // ゲームのアップデートで変わることがあるので、ゲーム内の表示も確認すること。
 // 素材名は記事の表記に合わせ、表記ゆれ（「槍エレ」「ダマ骸晶」など）は正式名称にそろえている。
 // 素材名は GameWith / 神ゲー攻略 / ゲーム乱舞 のトレジャー一覧と照合済み（2026-10-06）。
+import type { Category } from './storage.ts';
+
 const GW = 'https://xn--bck3aza1a2if6kra4ee0hf.gamewith.jp/article/show/';
 
+// 属性。「Element」はブラウザの型（画面の要素）と同じ名前になるので Elem にしている
+type Elem = '火' | '水' | '土' | '風' | '光' | '闇';
+// 光・闇以外の4属性。光・闇の素材は、この4属性の素材を半分ずつ使うことが多い
+type Base4 = '火' | '水' | '土' | '風';
+// 属性ごとの表には Record<Elem, string> のように型を付ける。1属性でも書き忘れると型チェックでエラーになる
+
+// 必要な素材1つ分
+export interface PresetReq {
+  name: string;
+  qty: number;
+}
+
+// プリセット1件。sub はキャラ名など（ないものもある）、note は注意書き
+export interface Preset {
+  id: string;
+  group: string;
+  sub?: string;
+  name: string;
+  source: string;
+  note?: string;
+  reqs: PresetReq[];
+}
+
+// 段階（4凸、5凸 など）ごとの必要素材。これを元にプリセットを作る
+interface Stage {
+  key: string;
+  name: string;
+  note?: string;
+  reqs: PresetReq[];
+}
+
+// [素材名, 個数] の組
+type Pair = [string, number];
+
 export const PRESETS = (() => {
-  const ELEMENTS = ['火', '水', '土', '風', '光', '闇'];
-  const GENE = { 火: 'ファイア・ジーン', 水: 'アクア・ジーン', 土: 'アース・ジーン', 風: 'ウィンド・ジーン', 光: 'ホーリー・ジーン', 闇: 'ダーク・ジーン' };
-  const SCALE = { 火: '赤竜鱗', 水: '青竜鱗', 土: '地竜鱗', 風: '風竜鱗', 光: '白竜鱗', 闇: '黒竜鱗' };
+  const ELEMENTS: Elem[] = ['火', '水', '土', '風', '光', '闇'];
+  const GENE: Record<Elem, string> = { 火: 'ファイア・ジーン', 水: 'アクア・ジーン', 土: 'アース・ジーン', 風: 'ウィンド・ジーン', 光: 'ホーリー・ジーン', 闇: 'ダーク・ジーン' };
+  const SCALE: Record<Elem, string> = { 火: '赤竜鱗', 水: '青竜鱗', 土: '地竜鱗', 風: '風竜鱗', 光: '白竜鱗', 闇: '黒竜鱗' };
   // 下位宝珠は火だけ「炎の宝珠」
-  const ORB = { 火: '炎の宝珠', 水: '水の宝珠', 土: '土の宝珠', 風: '風の宝珠', 光: '光の宝珠', 闇: '闇の宝珠' };
-  const STAR = { 火: '赤星の輝き', 水: '青星の輝き', 土: '黄星の輝き', 風: '緑星の輝き', 光: '白星の輝き', 闇: '黒星の輝き' };
+  const ORB: Record<Elem, string> = { 火: '炎の宝珠', 水: '水の宝珠', 土: '土の宝珠', 風: '風の宝珠', 光: '光の宝珠', 闇: '闇の宝珠' };
+  const STAR: Record<Elem, string> = { 火: '赤星の輝き', 水: '青星の輝き', 土: '黄星の輝き', 風: '緑星の輝き', 光: '白星の輝き', 闇: '黒星の輝き' };
   // 共闘（パンデモニウム第4階層）の書は火水土風の4種のみ
-  const BOOK = { 火: '灼熱の書', 水: '水分の書', 土: '巨人の書', 風: '風凪の書' };
-  const req = (name, qty) => ({ name, qty });
-  // 複数のプリセットの必要素材を素材名ごとに合計する（最初に出てきた順）
-  function sumReqs(list) {
-    const map = new Map();
+  const BOOK: Record<Base4, string> = { 火: '灼熱の書', 水: '水分の書', 土: '巨人の書', 風: '風凪の書' };
+  const req = (name: string, qty: number): PresetReq => ({ name, qty });
+  // 複数のプリセット（または段階）の必要素材を素材名ごとに合計する（最初に出てきた順）
+  function sumReqs(list: { reqs: PresetReq[] }[]): PresetReq[] {
+    const map = new Map<string, number>();
     for (const p of list) for (const r of p.reqs) map.set(r.name, (map.get(r.name) || 0) + r.qty);
     return [...map].map(([name, qty]) => req(name, qty));
   }
-  const presets = [];
+  const presets: Preset[] = [];
 
   // ---------- 十天衆 最終上限解放 ----------
-  const TENTEN = [
+  const TENTEN: { name: string; no: string; weapon: string; element: Elem; job: string }[] = [
     { name: 'ウーノ', no: '一番', weapon: '槍', element: '水', job: '守護騎士の証' },
     { name: 'ソーン', no: '二番', weapon: '弓', element: '光', job: '射手の証' },
     { name: 'サラーサ', no: '三番', weapon: '斧', element: '土', job: '剣闘士の証' },
@@ -40,9 +76,10 @@ export const PRESETS = (() => {
   const FINAL_SRC = GW + '53662';
 
   // 光は火/風の書を15個ずつ、闇は水/土の書を15個ずつ。それ以外は自属性の書30個
-  function bookReqs(element) {
+  function bookReqs(element: Elem): PresetReq[] {
     if (element === '光') return [req(BOOK.火, 15), req(BOOK.風, 15)];
     if (element === '闇') return [req(BOOK.水, 15), req(BOOK.土, 15)];
+    // ここに来るのは光・闇以外なので、TypeScript も element を Base4 として扱い、BOOK から引ける
     return [req(BOOK[element], 30)];
   }
 
@@ -116,7 +153,8 @@ export const PRESETS = (() => {
 
   // ---------- 十天衆 限界超越 ----------
   // Lv110 は専用トレジャー交換分を含む合計、Lv150 は「雄偉者たちの矜持」の交換素材で数えている
-  const TRANSCEND = {
+  // キャラ名 → 解放する Lv → 素材の一覧
+  const TRANSCEND: Record<string, Record<number, Pair[]>> = {
     ウーノ: {
       110: [['ヒヒイロカネ', 1], ['槍の銀片', 200], ['アビサルトラジェディー', 50], ['水の光輪', 80], ['ダマスカス骸晶', 20], ['星晶の欠片', 7500], ['水の宝珠', 7500], ['アクア・ジーン', 7500], ['朽ち果てた槍（3凸）', 30], ['ルピ', 100000]],
       120: [['エウロペのマグナアニマ', 50], ['水のプシュケー', 300], ['バハムートの紫電角', 100], ['一番天星の欠片', 50], ['究竟の証', 100], ['蒼天の魂', 1], ['ルピ', 5000000]],
@@ -188,7 +226,8 @@ export const PRESETS = (() => {
       150: [['終末の暗晶', 30], ['漆黒の棘翅', 30], ['狡知の魔角', 30], ['碧麗の証', 1]],
     },
   };
-  const STAGE_NOTE = {
+  // 注意書きがない Lv もあるので Partial（どのキーも、ないことがある）にしている
+  const STAGE_NOTE: Partial<Record<string, string>> = {
     110: '専用トレジャー交換分を含む合計',
     130: 'Lv130解放のフェイトエピソード挑戦に必要',
     150: '「雄偉者たちの矜持」の交換素材',
@@ -218,7 +257,7 @@ export const PRESETS = (() => {
 
   // ---------- 天司武器 4凸 ----------
   // 光/闇は光輪が2属性に分かれる（光: 火/風 8個ずつ、闇: 水/土 8個ずつ）
-  const SERAPHIC = [
+  const SERAPHIC: { name: string; element: Elem; weapon: string; anima: string; page: string; halos?: [Elem, number][] }[] = [
     { name: 'ソード・オブ・ミカエル', element: '火', weapon: '剣', anima: '黄龍', page: '56677' },
     { name: 'ワンド・オブ・ガブリエル', element: '水', weapon: '杖', anima: '黒麒麟', page: '56678' },
     { name: 'グローブ・オブ・ウリエル', element: '土', weapon: '格闘', anima: '黒麒麟', page: '56679' },
@@ -227,7 +266,7 @@ export const PRESETS = (() => {
     { name: 'サイス・オブ・ベリアル', element: '闇', weapon: '斧', anima: '黒麒麟', page: '144968', halos: [['水', 8], ['土', 8]] },
   ];
   for (const w of SERAPHIC) {
-    const halos = w.halos || [[w.element, 16]];
+    const halos: [Elem, number][] = w.halos || [[w.element, 16]];
     presets.push({
       id: `seraphic-${w.element}-4`,
       group: '天司武器 4凸',
@@ -247,7 +286,7 @@ export const PRESETS = (() => {
   }
 
   // ---------- エニアド 4凸 ----------
-  const ENNEAD = [
+  const ENNEAD: { name: string; boss: string; element: Elem; weapon: string; page: string }[] = [
     { name: 'ベンベネト', boss: 'アトゥム', element: '火', weapon: '槍', page: '344613' },
     { name: 'レルアバド', boss: 'アトゥム', element: '火', weapon: '杖', page: '344614' },
     { name: 'ウラエウス', boss: 'テフヌト', element: '水', weapon: '斧', page: '352613' },
@@ -279,7 +318,7 @@ export const PRESETS = (() => {
   }
 
   // ---------- 六竜武器（アンセスタル） 4凸 ----------
-  const ANCESTRAL = [
+  const ANCESTRAL: { name: string; dragon: string; element: Elem; weapon: string; unique: string; page: string }[] = [
     { name: 'ウィルナス・フィンガー', dragon: 'ウィルナス', element: '火', weapon: '格闘', unique: 'イグナイトラブル', page: '218607' },
     { name: 'ワムデュス・ナイダリア', dragon: 'ワムデュス', element: '水', weapon: '槍', unique: 'アビサルトラジェディー', page: '218603' },
     { name: 'ガレヲン・ジョー', dragon: 'ガレヲン', element: '土', weapon: '銃', unique: 'インシュラーコア', page: '218511' },
@@ -307,7 +346,7 @@ export const PRESETS = (() => {
   // ---------- レヴァンスウェポン ----------
   // 覚醒Lvは専用トレジャー1個=経験値20。Lv1→15 は1500(75個)、Lv15→20 は9000(450個)
   // 特殊強化の専用トレジャーは、同じグループ(火風光 / 水土闇)の3ボス分が必要。武器の属性のものは200個、残り2つは80個
-  const REVANS_BOSS = {
+  const REVANS_BOSS: Record<Elem, { boss: string; treasure: string; group: Elem[] }> = {
     火: { boss: 'ムゲン', treasure: '滅尽の残気', group: ['火', '風', '光'] },
     風: { boss: 'シエテ', treasure: '星海の刃屑', group: ['火', '風', '光'] },
     光: { boss: 'コスモス', treasure: '調停の裂布', group: ['火', '風', '光'] },
@@ -316,7 +355,7 @@ export const PRESETS = (() => {
     闇: { boss: 'アガスティア', treasure: '壊祖の紋装甲', group: ['水', '土', '闇'] },
   };
   // 4凸のブライト。光/闇は2属性に分かれる
-  const BRIGHT = {
+  const BRIGHT: Record<Elem, Pair[]> = {
     火: [['イグニス・ブライト', 10]],
     水: [['アクア・ブライト', 10]],
     土: [['テラ・ブライト', 10]],
@@ -324,8 +363,8 @@ export const PRESETS = (() => {
     光: [['イグニス・ブライト', 5], ['ウェントス・ブライト', 5]],
     闇: [['アクア・ブライト', 5], ['テラ・ブライト', 5]],
   };
-  const DRAGON_UNIQUE = { 火: 'イグナイトラブル', 水: 'アビサルトラジェディー', 土: 'インシュラーコア', 風: 'ゲイルロック', 光: '靂輪', 闇: 'トーデストリープ' };
-  const REVANS = [
+  const DRAGON_UNIQUE: Record<Elem, string> = { 火: 'イグナイトラブル', 水: 'アビサルトラジェディー', 土: 'インシュラーコア', 風: 'ゲイルロック', 光: '靂輪', 闇: 'トーデストリープ' };
+  const REVANS: { name: string; element: Elem; weapon: string }[] = [
     { name: '滅尽剣', element: '火', weapon: '剣' },
     { name: '必滅弓', element: '火', weapon: '弓' },
     { name: 'シュレディンガー', element: '水', weapon: '刀' },
@@ -343,7 +382,7 @@ export const PRESETS = (() => {
   for (const w of REVANS) {
     const { boss, treasure, group } = REVANS_BOSS[w.element];
     const sub = `${w.name}（${w.element}・${boss}）`;
-    const stages = [
+    const stages: Stage[] = [
       {
         key: '4', name: '4凸',
         reqs: [
@@ -393,9 +432,9 @@ export const PRESETS = (() => {
   // GameWith の記事は恩寵の名前と光・闇の光輪とルピを書いていないので、神ゲー攻略の各武器の記事で確認した（2026-10-27）
   // ルピは 4凸 10,000、5凸 50,000、限界超越は各段階 100,000（交換はショップ交換なので不要）
   // 恩寵は 5凸が「福音の〇〇恩寵」、Lv240 が「天穹を廻りし〇〇恩寵」（〇〇は下の GRACE_WORD）
-  const GRACE_WORD = { 火: '火舞う', 水: '水湧く', 土: '土護る', 風: '風囁く', 光: '光降る', 闇: '闇覆う' };
+  const GRACE_WORD: Record<Elem, string> = { 火: '火舞う', 水: '水湧く', 土: '土護る', 風: '風囁く', 光: '光降る', 闇: '闇覆う' };
   // Lv240 の光輪。光は火＋風、闇は水＋土を半分ずつ使う
-  const ULTIMA_HALO = {
+  const ULTIMA_HALO: Record<Elem, Pair[]> = {
     火: [['火の光輪', 120]],
     水: [['水の光輪', 120]],
     土: [['土の光輪', 120]],
@@ -403,9 +442,9 @@ export const PRESETS = (() => {
     光: [['火の光輪', 60], ['風の光輪', 60]],
     闇: [['水の光輪', 60], ['土の光輪', 60]],
   };
-  const MAGNA2 = { 火: 'シヴァ', 水: 'エウロペ', 土: 'ブローディア', 風: 'グリームニル', 光: 'メタトロン', 闇: 'アバター' };
-  const DRAGON = { 火: 'ウィルナス', 水: 'ワムデュス', 土: 'ガレヲン', 風: 'イーウィヤ', 光: 'ル・オー', 闇: 'フェディエル' };
-  const ULTIMA_BRIGHT = {
+  const MAGNA2: Record<Elem, string> = { 火: 'シヴァ', 水: 'エウロペ', 土: 'ブローディア', 風: 'グリームニル', 光: 'メタトロン', 闇: 'アバター' };
+  const DRAGON: Record<Elem, string> = { 火: 'ウィルナス', 水: 'ワムデュス', 土: 'ガレヲン', 風: 'イーウィヤ', 光: 'ル・オー', 闇: 'フェディエル' };
+  const ULTIMA_BRIGHT: Record<Elem, Pair[]> = {
     火: [['イグニス・ブライト', 20]],
     水: [['アクア・ブライト', 20]],
     土: [['テラ・ブライト', 20]],
@@ -413,7 +452,7 @@ export const PRESETS = (() => {
     光: [['イグニス・ブライト', 10], ['ウェントス・ブライト', 10]],
     闇: [['アクア・ブライト', 10], ['テラ・ブライト', 10]],
   };
-  const ULTIMA = [
+  const ULTIMA: { element: Elem; weapon: string; names: string[]; pages: string[] }[] = [
     { element: '火', weapon: '斧', names: ['絶対否定の大鎌', '永遠拒絶の大鎌'], pages: ['147753', '147754'] },
     { element: '水', weapon: '杖', names: ['絶対否定の杖', '永遠拒絶の杖'], pages: ['147755', '147756'] },
     { element: '土', weapon: '楽器', names: ['絶対否定の竪琴', '永遠拒絶の竪琴'], pages: ['147757', '147758'] },
@@ -424,7 +463,7 @@ export const PRESETS = (() => {
   const ULTIMA_SRC = GW + '146896';
   for (const u of ULTIMA) {
     const e = u.element;
-    const stages = [
+    const stages: Stage[] = [
       { key: 'make', name: '交換（3凸で入手）', reqs: [req(`${e}晶のエレメント`, 500), req(`${u.weapon}のエレメント`, 255), req('ダークネス・マテリアル', 5)] },
       {
         key: '4', name: '4凸',
@@ -493,7 +532,7 @@ export const PRESETS = (() => {
   // ---------- ドラゴニックウェポン ----------
   // GameWith は特殊強化の素材を「極致の証」と書いているが、神ゲー攻略（各武器と一覧の記事）と estalucia では「究竟の証」。
   // 「極致の証」はジョブ強化の仕組みの名前でアイテムではないので、究竟の証にしている。ルピも神ゲー攻略で確認（2026-10-27）
-  const DRACONIC = [
+  const DRACONIC: { name: string; element: Elem; weapon: string; page: string }[] = [
     { name: '雄渾と灼熱の調べ（ドラゴニックハープ）', element: '火', weapon: '楽器', page: '190117' },
     { name: '溟渤と激流の裁き（ドラゴニックバスター）', element: '水', weapon: '斧', page: '190264' },
     { name: '豊穣と恩愛の寿ぎ（ドラゴニックボウ）', element: '土', weapon: '弓', page: '190297' },
@@ -503,8 +542,9 @@ export const PRESETS = (() => {
   ];
   for (const w of DRACONIC) {
     const e = w.element;
-    const sub = `${w.name.match(/（(.+)）/)[1]}（${e}）`;
-    const stages = [
+    // 名前の（）の中（ドラゴニックハープ など）を使う。match は当たらないと null を返すので、そのときは名前全体にする
+    const sub = `${w.name.match(/（(.+)）/)?.[1] ?? w.name}（${e}）`;
+    const stages: Stage[] = [
       { key: 'make', name: '交換（3凸で入手）', reqs: [req(`${e}晶のエレメント`, 666), req(`${w.weapon}のエレメント`, 500), req('真龍の金鱗', 30)] },
       {
         key: '4', name: '4凸',
@@ -537,16 +577,16 @@ export const PRESETS = (() => {
   // ---------- 天星器（十天衆加入） ----------
   // 出典: GameWith「十天衆素材の効率よい集め方」(23094)。素材は変更先の属性で決まり、キャラ（武器種）では変わらない
   // 第1段階の真化は属性に関係なく光属性の素材を使う
-  const HIGH_ORB = { 火: '紅蓮の宝珠', 水: '霧氷の宝珠', 土: '大地の宝珠', 風: '竜巻の宝珠', 光: '煌光の宝珠', 闇: '冥闇の宝珠' };
-  const TOME = { 火: '赤の書', 水: '青の書', 土: '茶の書', 風: '緑の書', 光: '白の書', 闇: '黒の書' };
-  const SCROLL = { 火: '紅蓮の巻', 水: '霧氷の巻', 土: '大地の巻', 風: '竜巻の巻', 光: '天光の巻', 闇: '冥闇の巻' };
-  const ISLAND = { 火: 'コロッサス', 水: 'リヴァイアサン', 土: 'ユグドラシル', 風: 'ティアマト', 光: 'シュヴァリエ', 闇: 'セレスト' };
-  const MAGNA_MAT = { 火: 'プロミネンスリアクター', 水: '海神の扇尾', 土: '創樹の花蕾', 風: '嵐竜の琥珀眼', 光: 'プライマルビット', 闇: '黒霧の結晶' };
-  const TRUE_ANIMA = (e) => `真なる${e}のアニマ`;
+  const HIGH_ORB: Record<Elem, string> = { 火: '紅蓮の宝珠', 水: '霧氷の宝珠', 土: '大地の宝珠', 風: '竜巻の宝珠', 光: '煌光の宝珠', 闇: '冥闇の宝珠' };
+  const TOME: Record<Elem, string> = { 火: '赤の書', 水: '青の書', 土: '茶の書', 風: '緑の書', 光: '白の書', 闇: '黒の書' };
+  const SCROLL: Record<Elem, string> = { 火: '紅蓮の巻', 水: '霧氷の巻', 土: '大地の巻', 風: '竜巻の巻', 光: '天光の巻', 闇: '冥闇の巻' };
+  const ISLAND: Record<Elem, string> = { 火: 'コロッサス', 水: 'リヴァイアサン', 土: 'ユグドラシル', 風: 'ティアマト', 光: 'シュヴァリエ', 闇: 'セレスト' };
+  const MAGNA_MAT: Record<Elem, string> = { 火: 'プロミネンスリアクター', 水: '海神の扇尾', 土: '創樹の花蕾', 風: '嵐竜の琥珀眼', 光: 'プライマルビット', 闇: '黒霧の結晶' };
+  const TRUE_ANIMA = (e: Elem): string => `真なる${e}のアニマ`;
   const REVENANT_SRC = GW + '23094';
   for (const e of ELEMENTS) {
     const sub = `${e}属性に変更`;
-    const stages = [
+    const stages: Stage[] = [
       {
         key: '1', name: '第1段階：真化',
         note: '天星器を3凸Lv100にしておく。素材は変更先に関係なく光属性',
@@ -624,7 +664,7 @@ export const PRESETS = (() => {
   // ---------- 十賢者（アーカルム） ----------
   // 出典: GameWith の各アーカルム召喚石の記事、十賢者の加入(144770)・最終(390463)・限界超越(537602)、新世界の礎武器の各記事
   // 光（ザ・スター）は火/風、闇（デス）は水/土の素材を半分ずつ使う
-  const SAGES = [
+  const SAGES: { sage: string; stone: string; element: Elem; idea: string; frag: string; grande: string; weapon: string; stonePage: string; weaponPage: string }[] = [
     { sage: 'アラナン', stone: 'ザ・サン', element: '火', idea: '太陽', frag: 'アクイラ', grande: '修行者の覚書', weapon: 'ヒート・オブ・ザ・サン', stonePage: '81834', weaponPage: '245167' },
     { sage: 'フラウ', stone: 'ザ・デビル', element: '火', idea: '悪魔', frag: 'アクイラ', grande: 'レムペッパー', weapon: 'キス・オブ・ザ・デビル', stonePage: '81836', weaponPage: '245168' },
     { sage: 'マリア・テレサ', stone: 'ジャスティス', element: '水', idea: '正義', frag: 'ベラトール', grande: 'トキシックフラワー', weapon: 'ライズ・オブ・ジャスティス', stonePage: '81844', weaponPage: '245166' },
@@ -637,20 +677,21 @@ export const PRESETS = (() => {
     { sage: 'ニーア', stone: 'デス', element: '闇', idea: '死神', frag: 'ケルサス', grande: '巨獣骨', weapon: 'ペイン・オブ・デス', stonePage: '81843', weaponPage: '245164' },
   ];
   // 光/闇が半分ずつ使う属性
-  const SPLIT = { 光: ['火', '風'], 闇: ['水', '土'] };
-  const OLD_ANIMA = { 火: 'フラム＝グラス', 水: 'マキュラ・マリウス', 土: 'メドゥーサ', 風: 'ナタク', 光: 'アポロン', 闇: 'オリヴィエ' };
-  const NEW_ANIMA = { 火: 'アテナ', 水: 'グラニ', 土: 'バアル', 風: 'ガルーダ', 光: 'オーディン', 闇: 'リッチ' };
-  const SERAPH = { 火: 'ミカエル', 水: 'ガブリエル', 土: 'ウリエル', 風: 'ラファエル' };
-  const SHOWDOWN = { 火: '灼滅の焔角', 水: '氷獄の結晶', 土: '裁考の水晶', 風: '人馬の円盤', 光: '妃光の水晶', 闇: '幻魔の破片' };
-  const SHARD = { 火: '業火の石片', 水: '玉水の石片', 土: '荒土の石片', 風: '狂風の石片' };
-  const BRIGHT_NAME = { 火: 'イグニス・ブライト', 水: 'アクア・ブライト', 土: 'テラ・ブライト', 風: 'ウェントス・ブライト' };
-  const GOSPEL = { 火: 'エゲイラ・ゴスペル', 水: 'アナリプシア・ゴスペル', 土: 'テュシア・ゴスペル', 風: 'ゲネア・ゴスペル' };
-  const HAZE = { 火: 'オーロラ・ヘイズ', 風: 'オーロラ・ヘイズ', 光: 'オーロラ・ヘイズ', 水: 'カオティック・ヘイズ', 土: 'カオティック・ヘイズ', 闇: 'カオティック・ヘイズ' };
+  const SPLIT: Record<'光' | '闇', Base4[]> = { 光: ['火', '風'], 闇: ['水', '土'] };
+  const OLD_ANIMA: Record<Elem, string> = { 火: 'フラム＝グラス', 水: 'マキュラ・マリウス', 土: 'メドゥーサ', 風: 'ナタク', 光: 'アポロン', 闇: 'オリヴィエ' };
+  const NEW_ANIMA: Record<Elem, string> = { 火: 'アテナ', 水: 'グラニ', 土: 'バアル', 風: 'ガルーダ', 光: 'オーディン', 闇: 'リッチ' };
+  const SERAPH_ANIMA: Record<Base4, string> = { 火: 'ミカエルのアニマ', 水: 'ガブリエルのアニマ', 土: 'ウリエルのアニマ', 風: 'ラファエルのアニマ' };
+  const SHOWDOWN: Record<Elem, string> = { 火: '灼滅の焔角', 水: '氷獄の結晶', 土: '裁考の水晶', 風: '人馬の円盤', 光: '妃光の水晶', 闇: '幻魔の破片' };
+  const SHARD: Record<Base4, string> = { 火: '業火の石片', 水: '玉水の石片', 土: '荒土の石片', 風: '狂風の石片' };
+  const BRIGHT_NAME: Record<Base4, string> = { 火: 'イグニス・ブライト', 水: 'アクア・ブライト', 土: 'テラ・ブライト', 風: 'ウェントス・ブライト' };
+  const GOSPEL: Record<Base4, string> = { 火: 'エゲイラ・ゴスペル', 水: 'アナリプシア・ゴスペル', 土: 'テュシア・ゴスペル', 風: 'ゲネア・ゴスペル' };
+  const HAZE: Record<Elem, string> = { 火: 'オーロラ・ヘイズ', 風: 'オーロラ・ヘイズ', 光: 'オーロラ・ヘイズ', 水: 'カオティック・ヘイズ', 土: 'カオティック・ヘイズ', 闇: 'カオティック・ヘイズ' };
   // 属性ごとの素材を作る。光/闇は2属性に半分ずつ分ける
-  const byElement = (element, table, qty) => (SPLIT[element]
-    ? SPLIT[element].map((x) => req(table[x], qty / 2))
-    : [req(table[element], qty)]);
-  const verum = (element, qty) => byElement(element, { 火: 'ヴェルム文書・火', 水: 'ヴェルム文書・水', 土: 'ヴェルム文書・土', 風: 'ヴェルム文書・風' }, qty);
+  function byElement(element: Elem, table: Record<Base4, string>, qty: number): PresetReq[] {
+    if (element === '光' || element === '闇') return SPLIT[element].map((x) => req(table[x], qty / 2));
+    return [req(table[element], qty)];
+  }
+  const verum = (element: Elem, qty: number) => byElement(element, { 火: 'ヴェルム文書・火', 水: 'ヴェルム文書・水', 土: 'ヴェルム文書・土', 風: 'ヴェルム文書・風' }, qty);
 
   for (const s of SAGES) {
     const e = s.element;
@@ -658,16 +699,17 @@ export const PRESETS = (() => {
     const astra = `${e}精のアストラ`;
     const idea = `${s.idea}のイデア`;
     const frag = `${s.frag}・フラグメント`;
-    const arc = (stone, as, id, ve, haze) => [req('セフィラストーン', stone), req(astra, as), req(idea, id), ...verum(e, ve), req(HAZE[e], haze)];
+    // アーカルムの共通素材（セフィラストーン・アストラ・イデア・ヴェルム文書・ヘイズ）の個数を順に渡す
+    const arc = (stone: number, as: number, id: number, ve: number, haze: number) => [req('セフィラストーン', stone), req(astra, as), req(idea, id), ...verum(e, ve), req(HAZE[e], haze)];
     const stoneSrc = GW + s.stonePage;
-    const stoneStages = [
+    const stoneStages: Stage[] = [
       { key: 'make', name: '召喚石：交換（SR）', reqs: [...arc(2, 3, 2, 6, 1), req('星晶塊', 100), req(`${ISLAND[e]}のマグナアニマ`, 30)] },
       { key: 'sr1', name: '召喚石：SR1凸', reqs: [...arc(5, 5, 3, 16, 3), req('虹星晶', 100), req(`${e}晶のエレメント`, 100)] },
       { key: 'sr2', name: '召喚石：SR2凸', reqs: [...arc(10, 10, 5, 30, 7), req(`${OLD_ANIMA[e]}のアニマ`, 30)] },
       { key: 'sr3', name: '召喚石：SR3凸', reqs: [...arc(15, 15, 7, 50, 16), req(`${NEW_ANIMA[e]}のアニマ`, 30), req('究竟の証', 3)] },
       {
         key: 'ssr', name: '召喚石：SSR化',
-        reqs: [...arc(30, 30, 15, 80, 24), req('銀天の輝き', 5), ...byElement(e, Object.fromEntries(Object.entries(SERAPH).map(([k, v]) => [k, `${v}のアニマ`])), 20), req('金剛晶', 1)],
+        reqs: [...arc(30, 30, 15, 80, 24), req('銀天の輝き', 5), ...byElement(e, SERAPH_ANIMA, 20), req('金剛晶', 1)],
       },
       { key: '4', name: '召喚石：4凸', reqs: [...arc(45, 45, 25, 120, 32), req(`${MAGNA2[e]}のマグナアニマ`, 10), req(frag, 10)] },
       {
@@ -678,7 +720,7 @@ export const PRESETS = (() => {
         ],
       },
     ];
-    const join = {
+    const join: Stage = {
       key: 'join', name: '加入：カード交換',
       note: '召喚石5凸後、「○○が描かれたカード」を交換してフェイトエピソードをクリアすると加入',
       reqs: [req('セフィラストーン', 30), req(astra, 200), req(idea, 20), req('セフィラ玉髄', 1)],
@@ -692,7 +734,7 @@ export const PRESETS = (() => {
     });
 
     // 新世界の礎武器
-    const brights = (qty) => byElement(e, BRIGHT_NAME, qty);
+    const brights = (qty: number) => byElement(e, BRIGHT_NAME, qty);
     const veritas = `${s.idea}のウェリタス`;
     const weaponSrc = GW + s.weaponPage;
     const weaponStages = [
@@ -714,7 +756,7 @@ export const PRESETS = (() => {
       source: weaponSrc, reqs: sumReqs(weaponStages),
     });
 
-    const domain = {
+    const domain: Stage = {
       key: 'domain', name: '至賢の領域：全解放（合計）',
       note: '記事の合計値。領域の解放には礎武器の上限解放も必要',
       reqs: [
@@ -723,12 +765,12 @@ export const PRESETS = (() => {
         req(`${MAGNA2[e]}のマグナアニマ`, 10),
       ],
     };
-    const final = {
+    const final: Stage = {
       key: 'final', name: '最終上限解放',
       note: '至賢の領域の全解放と礎武器5凸、エリア・ムンドゥスのディフェンダー全討伐が条件',
       reqs: [req('セフィラ玉髄', 1), ...byElement(e, GOSPEL, 50), ...brights(50), req('セフィラストーン', 200)],
     };
-    const fourth = {
+    const fourth: Stage = {
       key: '4th', name: '4アビ取得（ザ・ワールドが描かれたカード）',
       note: 'Lv100到達とザ・ワールド討伐後に交換できる',
       reqs: [req('金剛晶', 1), req('世界のイデア', 100), req('ニューワールド・クォーツ', 30), req('ダマスカス骸晶', 10)],
@@ -743,12 +785,14 @@ export const PRESETS = (() => {
   }
 
   // 十賢者の限界超越 Lv110（2026-10 時点で記事に素材が載っているのはマリア・テレサとカイムのみ）
-  const SAGE_TRANSCEND = [
+  const SAGE_TRANSCEND: { sage: string; stone: string; reqs: Pair[] }[] = [
     { sage: 'マリア・テレサ', stone: 'ジャスティス', reqs: [['ジャスティスビリーフ', 40], ['アクアホイール', 8], ['異律のアゲート', 1], ['ニューワールド・クォーツ', 20], ['ニフイヴィンテの魔核', 60], ['正義のイデア', 120], ['水精のアストラ', 240]] },
     { sage: 'カイム', stone: 'ザ・ハングドマン', reqs: [['ザ・ハングドマンビリーフ', 40], ['テラホイール', 8], ['異律のアゲート', 1], ['ニューワールド・クォーツ', 20], ['ナロフィルミダスの魔核', 60], ['刑死者のイデア', 120], ['土精のアストラ', 240]] },
   ];
   for (const t of SAGE_TRANSCEND) {
     const s = SAGES.find((x) => x.sage === t.sage);
+    // find は見つからないと undefined を返す。名前の書き間違いにすぐ気づけるよう、エラーにする
+    if (!s) throw new Error(`十賢者が見つかりません: ${t.sage}`);
     presets.push({
       id: `sage-${t.stone}-transcend-110`, group: '十賢者', sub: `${s.sage}（${s.stone}・${s.element}）`, name: '限界超越：Lv110解放',
       source: GW + '537602', note: 'ソロモナスの賢者を進めると解放される',
@@ -760,8 +804,9 @@ export const PRESETS = (() => {
 })();
 
 // 以前の版で仮の名前にしていた素材の、正式名称への対応表（保存データの移行用）
+// 旧名 → 新名
 export const PRESET_RENAMES = (() => {
-  const map = {};
+  const map: Record<string, string> = {};
   const tenten = [
     ['ウーノ', '一番', '槍'], ['ソーン', '二番', '弓'], ['サラーサ', '三番', '斧'], ['カトル', '四番', '短剣'],
     ['フュンフ', '五番', '杖'], ['シス', '六番', '格闘'], ['シエテ', '七番', '剣'], ['オクトー', '八番', '刀'],
@@ -772,7 +817,9 @@ export const PRESET_RENAMES = (() => {
     map[`対応した武器エレメント（${name}）`] = `${weapon}のエレメント`;
   }
   const gene = { 火: 'ファイア・ジーン', 水: 'アクア・ジーン', 土: 'アース・ジーン', 風: 'ウィンド・ジーン', 光: 'ホーリー・ジーン', 闇: 'ダーク・ジーン' };
-  for (const e of ['火', '水', '土', '風', '光', '闇']) {
+  // 後ろの as const は「中身を書いたとおりの値として扱う」という意味。
+  // e が「ただの文字列」ではなく「'火' か '水' か…」になり、gene[e] のように表を引ける
+  for (const e of ['火', '水', '土', '風', '光', '闇'] as const) {
     map[`プシュケー（${e}）`] = `${e}のプシュケー`;
     map[`ジーン（${e}）`] = gene[e];
     map[`下位宝珠（${e}）`] = e === '火' ? '炎の宝珠' : `${e}の宝珠`;
@@ -783,28 +830,28 @@ export const PRESET_RENAMES = (() => {
   map['火の宝珠'] = '炎の宝珠';
   const star = { 火: '赤星の輝き', 水: '青星の輝き', 土: '黄星の輝き', 風: '緑星の輝き', 光: '白星の輝き', 闇: '黒星の輝き' };
   const book = { 火: '灼熱の書', 水: '水分の書', 土: '巨人の書', 風: '風凪の書' };
-  for (const e of ['火', '水', '土', '風', '光', '闇']) map[`輝き（${e}）`] = star[e];
-  for (const e of ['火', '水', '土', '風']) map[`共闘素材の書（${e}）`] = book[e];
+  for (const e of ['火', '水', '土', '風', '光', '闇'] as const) map[`輝き（${e}）`] = star[e];
+  for (const e of ['火', '水', '土', '風'] as const) map[`共闘素材の書（${e}）`] = book[e];
   for (const b of ['イグニス', 'アクア', 'テラ', 'ウェントス']) map[`${b}ブライト`] = `${b}・ブライト`;
   for (const e of ['火', '水', '土', '風']) map[`光輪（${e}・要確認）`] = `${e}の光輪`;
   // 2026-10-27 に終末武器の恩寵の正式名称を確認したもの。光・闇の「光輪（属性・要確認）」は2種類に分かれたので移せない
   const grace = { 火: '火舞う', 水: '水湧く', 土: '土護る', 風: '風囁く', 光: '光降る', 闇: '闇覆う' };
-  for (const e of ['火', '水', '土', '光', '闇']) map[`恩寵（${e}）`] = `福音の${grace[e]}恩寵`;
-  for (const e of ['火', '水', '土', '風', '光', '闇']) map[`新恩寵（${e}）`] = `天穹を廻りし${grace[e]}恩寵`;
+  for (const e of ['火', '水', '土', '光', '闇'] as const) map[`恩寵（${e}）`] = `福音の${grace[e]}恩寵`;
+  for (const e of ['火', '水', '土', '風', '光', '闇'] as const) map[`新恩寵（${e}）`] = `天穹を廻りし${grace[e]}恩寵`;
   // ドラゴニックウェポンの特殊強化。GameWith の「極致の証」は究竟の証の書き間違い（2026-10-27 確認）
   map['極致の証'] = '究竟の証';
   return map;
 })();
 
 // コンテンツの大分類。プリセットの選択肢と目標リストをこの順に分けて並べる
-export const PRESET_CATEGORIES = ['キャラ', '武器', 'その他'];
+export const PRESET_CATEGORIES: Category[] = ['キャラ', '武器', 'その他'];
 const CHARACTER_GROUPS = ['十天衆', '十賢者', '天星器（十天衆加入）'];
 
-export function presetCategory(p) {
+export function presetCategory(p: Preset): Category {
   return CHARACTER_GROUPS.includes(p.group) ? 'キャラ' : '武器';
 }
 
 // 目標に付ける名前（キャラ名などの sub があれば「ウーノ：最終：銀の依代 最終解放」のように前に付ける）
-export function presetLabel(p) {
+export function presetLabel(p: Preset): string {
   return p.sub ? `${p.sub}：${p.name}` : p.name;
 }

@@ -2,7 +2,8 @@
 // GameWith の「アイテム(トレジャー)入手法一覧」と各素材の記事を中心に確認（2026-10-06）。
 // 検索結果の要約でしか確かめられていないものは末尾に「（要確認）」を付けている。
 export const MaterialSource = (() => {
-  const EXACT = {
+  // 素材名 → 入手先
+  const EXACT: Record<string, string> = {
     // 試練・エクストラクエスト
     炎の宝珠: '朱緋の試練／エンジェル・ヘイロー',
     水の宝珠: '朱緋の試練／エンジェル・ヘイロー',
@@ -105,8 +106,10 @@ export const MaterialSource = (() => {
   const MAGNA2 = ['シヴァ', 'エウロペ', 'ブローディア', 'グリームニル', 'メタトロン', 'アバター'];
   const ENNEAD = ['アトゥム', 'テフヌト', 'ベンヌ', 'ラー', 'ホルス', 'オシリス'];
 
-  // 名前のパターンで決まるもの
-  const RULES = [
+  // 名前のパターンで決まるもの。[パターン, 入手先を返す関数] の組で、関数が null を返したら次のパターンを調べる
+  // m は正規表現に当たった結果（m[1] が1つ目の（）の中身）、n は素材名
+  type Rule = [RegExp, (m: RegExpMatchArray, n: string) => string | null];
+  const RULES: Rule[] = [
     [/^(.)晶のエレメント$/, (m) => `${m[1]}属性の召喚石をエレメント化`],
     [/^(槍|弓|斧|短剣|杖|格闘|剣|刀|楽器|銃)のエレメント$/, (m) => `${m[1]}をエレメント化`],
     [/証$/, (m, n) => (/^(剣闘士|守護騎士|聖職者|魔導士|盗賊|魔剣士|格闘士|射手|吟遊詩人|槍騎兵|錬金術師|侍|忍|暗殺者|賢者|撃手|剣聖|双剣士|楽師)の証$/.test(n) ? '共闘（パンデモニウム）／栄誉交換／ローズクリスタル交換' : null)],
@@ -140,7 +143,8 @@ export const MaterialSource = (() => {
     [/^天穹を廻りし.+恩寵$/, () => '新ルシファー（スパルシ）を1属性のPTでクリアした称号報酬'],
   ];
 
-  function of(name) {
+  // 入手先が分からない素材は null
+  function of(name: string): string | null {
     if (EXACT[name]) return EXACT[name];
     if (DRAGON_UNIQUE.includes(name)) return '六竜HL（固有トレジャー）';
     for (const [re, fn] of RULES) {

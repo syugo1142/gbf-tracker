@@ -57,8 +57,8 @@ src/
 ├─ storage.ts   # localStorage への保存と読み込み、保存データの型
 ├─ util.ts      # DOM 生成ヘルパーなど
 ├─ icons.ts     # 素材のアイコン画像
-├─ presets.js   # 目標プリセット（必要素材データ）
-├─ sources.js   # 素材の入手先
+├─ presets.ts   # 目標プリセット（必要素材データ）
+├─ sources.ts   # 素材の入手先
 ├─ tracker.js   # 素材トラッカー
 ├─ app.ts       # データの保持
 ├─ backup.ts    # バックアップ
