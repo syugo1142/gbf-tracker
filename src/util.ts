@@ -1,9 +1,9 @@
 // DOM 生成ヘルパー。文字列は textContent で入れるので XSS の心配がない
 
 // el() の props に渡せるもの。class・text・on〇〇（イベント）と、要素のプロパティや属性
-type Props = Record<string, unknown>;
+export type Props = Record<string, unknown>;
 // el() の children に渡せるもの。null や undefined は飛ばす
-type Child = Node | string | number | null | undefined;
+export type Child = Node | string | number | null | undefined;
 
 // tag に 'button' を渡すと HTMLButtonElement が返る、のように、タグ名から戻り値の型が決まる
 export function el<K extends keyof HTMLElementTagNameMap>(
@@ -31,6 +31,13 @@ export function el<K extends keyof HTMLElementTagNameMap>(
 export function byId<T extends HTMLElement>(id: string, type: new () => T): T {
   const node = document.getElementById(id);
   if (!(node instanceof type)) throw new Error(`#${id} が見つからないか、種類が違います`);
+  return node;
+}
+
+// フォームの中の入力欄を name で取り出す。考え方は byId と同じ
+export function formField<T extends HTMLElement>(form: HTMLFormElement, name: string, type: new () => T): T {
+  const node = form.elements.namedItem(name);
+  if (!(node instanceof type)) throw new Error(`入力欄 ${name} が見つからないか、種類が違います`);
   return node;
 }
 

@@ -1,44 +1,59 @@
-import { el, uid, toNum, formatNum } from './util.ts';
+import { el, byId, formField, uid, toNum, formatNum } from './util.ts';
+import type { Props, Child } from './util.ts';
+import type { AppState, Category, Material, Requirement, Target } from './storage.ts';
 import { MaterialIcon } from './icons.ts';
 import { MaterialSource } from './sources.ts';
 import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.ts';
+import type { Preset } from './presets.ts';
+
+// init に渡すアプリの状態（app.ts の app）の形
+interface App {
+  state: AppState;
+  save(): boolean;
+}
 
 // 素材トラッカー
 export const Tracker = (() => {
-  let app; // { state, save }
+  let app: App;
 
   // 開いている目標などの ID。再描画しても開閉状態を保つため、この閲覧者のブラウザに覚えておく
   const OPEN_KEY = 'gbf-tools-open';
   const openIds = new Set(loadOpenIds());
 
-  function loadOpenIds() {
+  function loadOpenIds(): string[] {
     try {
-      return JSON.parse(localStorage.getItem(OPEN_KEY)) || [];
+      const raw = localStorage.getItem(OPEN_KEY);
+      // 保存されている値はどんな形か分からないので、文字列の配列のときだけ使う
+      const ids: unknown = raw ? JSON.parse(raw) : [];
+      return Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : [];
     } catch {
       return [];
     }
   }
 
-  function setOpen(id, open) {
+  function setOpen(id: string, open: boolean): void {
     if (open) openIds.add(id);
     else openIds.delete(id);
     try { localStorage.setItem(OPEN_KEY, JSON.stringify([...openIds])); } catch {}
   }
 
   // 開閉状態を覚える <details> を作る
-  function details(id, props, children) {
+  function details(id: string, props: Props, children: Child[]): HTMLDetailsElement {
     const node = el('details', { ...props, open: openIds.has(id) }, children);
     node.addEventListener('toggle', () => setOpen(id, node.open));
     return node;
   }
 
-  function init(appRef) {
+  function init(appRef: App): void {
     app = appRef;
 
-    document.getElementById('material-form').addEventListener('submit', (e) => {
+    const materialForm = byId('material-form', HTMLFormElement);
+    const nameInput = formField(materialForm, 'name', HTMLInputElement);
+    const ownedInput = formField(materialForm, 'owned', HTMLInputElement);
+    const perRunInput = formField(materialForm, 'perRun', HTMLInputElement);
+    materialForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const form = e.target;
-      const name = form.elements.name.value.trim();
+      const name = nameInput.value.trim();
       if (!name) return;
       if (app.state.materials.some((m) => m.name === name)) {
         alert('同じ名前の素材がすでにあります');
@@ -47,22 +62,22 @@ export const Tracker = (() => {
       app.state.materials.push({
         id: uid(),
         name,
-        owned: toNum(form.elements.owned.value),
-        perRun: toNum(form.elements.perRun.value),
+        owned: toNum(ownedInput.value),
+        perRun: toNum(perRunInput.value),
       });
-      form.reset();
+      materialForm.reset();
       commit();
     });
 
-    document.getElementById('add-req-row').addEventListener('click', () => addReqRow());
+    byId('add-req-row', HTMLButtonElement).addEventListener('click', () => addReqRow());
 
-    document.getElementById('target-form').addEventListener('submit', (e) => {
+    const targetForm = byId('target-form', HTMLFormElement);
+    targetForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const form = e.target;
       const reqs = [...document.querySelectorAll('#req-rows .req-row')]
         .map((row) => ({
-          materialId: row.querySelector('select').value,
-          qty: toNum(row.querySelector('input').value),
+          materialId: row.querySelector('select')?.value ?? '',
+          qty: toNum(row.querySelector('input')?.value),
         }))
         .filter((r) => r.materialId && r.qty > 0);
       if (reqs.length === 0) {
@@ -71,25 +86,25 @@ export const Tracker = (() => {
       }
       const merged = mergeReqs(reqs);
       // 目標名は素材から自動で付ける（例:「ヒヒイロカネ ほか2種」）
-      const first = findMaterial(merged[0].materialId).name;
+      const first = findMaterial(merged[0].materialId)?.name ?? '';
       const name = merged.length > 1 ? `${first} ほか${merged.length - 1}種` : first;
       app.state.targets.push({ id: uid(), name, done: false, reqs: merged });
-      form.reset();
-      document.getElementById('req-rows').replaceChildren();
+      targetForm.reset();
+      byId('req-rows', HTMLDivElement).replaceChildren();
       addReqRow();
       commit();
     });
 
-    const all = document.getElementById('all-materials');
+    const all = byId('all-materials', HTMLDetailsElement);
     all.open = openIds.has('all-materials');
     all.addEventListener('toggle', () => setOpen('all-materials', all.open));
 
-    const toggleTargets = (open) => {
+    const toggleTargets = (open: boolean) => {
       for (const t of app.state.targets) setOpen(t.id, open);
       render();
     };
-    document.getElementById('open-all').addEventListener('click', () => toggleTargets(true));
-    document.getElementById('close-all').addEventListener('click', () => toggleTargets(false));
+    byId('open-all', HTMLButtonElement).addEventListener('click', () => toggleTargets(true));
+    byId('close-all', HTMLButtonElement).addEventListener('click', () => toggleTargets(false));
 
     migrateMaterialNames();
     initPresets();
@@ -98,7 +113,7 @@ export const Tracker = (() => {
   }
 
   // 仮の名前で登録済みの素材を正式名称に置き換える。同名の素材がすでにあれば1つにまとめる
-  function migrateMaterialNames() {
+  function migrateMaterialNames(): void {
     let changed = false;
     for (const m of [...app.state.materials]) {
       const to = PRESET_RENAMES[m.name];
@@ -120,12 +135,16 @@ export const Tracker = (() => {
     if (changed) app.save();
   }
 
-  function initPresets() {
-    const form = document.getElementById('preset-form');
-    const groupSelect = form.elements.group;
-    const subSelect = form.elements.sub;
-    const select = form.elements.preset;
-    const info = document.getElementById('preset-info');
+  // プリセットを選ぶ欄で、2段目（キャラ名など）を何と呼ぶか。ここにないコンテンツは「武器」
+  const SUB_LABELS: Record<string, string> = { 十天衆: 'キャラ', 十賢者: 'キャラ', '天星器（十天衆加入）': '変更先の属性' };
+
+  function initPresets(): void {
+    const form = byId('preset-form', HTMLFormElement);
+    const groupSelect = formField(form, 'group', HTMLSelectElement);
+    const subSelect = formField(form, 'sub', HTMLSelectElement);
+    const select = formField(form, 'preset', HTMLSelectElement);
+    const countInput = formField(form, 'count', HTMLInputElement);
+    const info = byId('preset-info', HTMLParagraphElement);
 
     // コンテンツ → (キャラ名など。sub があるコンテンツのみ) → プリセット
     // キャラ・武器などの大分類ごとに見出しを付けて並べる
@@ -136,7 +155,7 @@ export const Tracker = (() => {
       groupSelect.append(el('optgroup', { label: category }, groups.map((g) => el('option', { value: g, text: g }))));
     }
 
-    function fillPresets(items, emptyText) {
+    function fillPresets(items: Preset[], emptyText: string): void {
       select.replaceChildren(
         el('option', { value: '', text: items.length ? 'プリセットを選択' : emptyText }),
         ...items.map((p) => el('option', { value: p.id, text: p.name })),
@@ -148,8 +167,9 @@ export const Tracker = (() => {
     let subLabel = '';
     groupSelect.addEventListener('change', () => {
       const items = PRESETS.filter((p) => p.group === groupSelect.value);
-      const subs = [...new Set(items.map((p) => p.sub).filter(Boolean))];
-      subLabel = { 十天衆: 'キャラ', 十賢者: 'キャラ', '天星器（十天衆加入）': '変更先の属性' }[groupSelect.value] || '武器';
+      // sub がないプリセットは除く。(s): s is string は「true を返したものは文字列」と TypeScript に教える書き方
+      const subs = [...new Set(items.map((p) => p.sub).filter((s): s is string => Boolean(s)))];
+      subLabel = SUB_LABELS[groupSelect.value] || '武器';
       subSelect.hidden = subs.length === 0;
       subSelect.setAttribute('aria-label', subLabel);
       subSelect.replaceChildren(
@@ -182,13 +202,13 @@ export const Tracker = (() => {
       e.preventDefault();
       const p = PRESETS.find((x) => x.id === select.value);
       if (!p) return;
-      const count = Math.max(1, Math.floor(toNum(form.elements.count.value)));
+      const count = Math.max(1, Math.floor(toNum(countInput.value)));
       addTargetFromPreset(p, count);
     });
   }
 
   // プリセットから目標を作る。未登録の素材は所持数0で自動追加する
-  function addTargetFromPreset(preset, count) {
+  function addTargetFromPreset(preset: Preset, count: number): void {
     const reqs = preset.reqs.map((r) => {
       let m = app.state.materials.find((x) => x.name === r.name);
       if (!m) {
@@ -208,22 +228,23 @@ export const Tracker = (() => {
   }
 
   // 同じ素材が複数行に入力されていたら合算する
-  function mergeReqs(reqs) {
-    const map = new Map();
+  function mergeReqs(reqs: Requirement[]): Requirement[] {
+    const map = new Map<string, number>();
     for (const r of reqs) map.set(r.materialId, (map.get(r.materialId) || 0) + r.qty);
     return [...map].map(([materialId, qty]) => ({ materialId, qty }));
   }
 
-  function addReqRow() {
-    const row = el('div', { class: 'req-row' }, [
+  function addReqRow(): void {
+    // 削除ボタンの中で row 自身を使うので、型を先に書いておく（書かないと TypeScript が型を決められない）
+    const row: HTMLDivElement = el('div', { class: 'req-row' }, [
       materialSelect(),
       el('input', { type: 'number', min: '1', placeholder: '個数', 'aria-label': '個数' }),
       el('button', { type: 'button', text: '×', class: 'icon', 'aria-label': 'この行を削除', onclick: () => row.remove() }),
     ]);
-    document.getElementById('req-rows').append(row);
+    byId('req-rows', HTMLDivElement).append(row);
   }
 
-  function materialSelect(selectedId = '') {
+  function materialSelect(selectedId = ''): HTMLSelectElement {
     const select = el('select', { 'aria-label': '素材' }, el('option', { value: '', text: '素材を選択' }));
     for (const m of app.state.materials) {
       select.append(el('option', { value: m.id, text: m.name, selected: m.id === selectedId }));
@@ -231,13 +252,14 @@ export const Tracker = (() => {
     return select;
   }
 
-  function findMaterial(id) {
+  // 素材が見つからないとき（削除済みなど）は undefined
+  function findMaterial(id: string): Material | undefined {
     return app.state.materials.find((m) => m.id === id);
   }
 
-  // 未完了の目標から素材ごとの必要数を集計
-  function requiredTotals() {
-    const totals = new Map();
+  // 未完了の目標から素材ごとの必要数を集計（素材 ID → 必要数）
+  function requiredTotals(): Map<string, number> {
+    const totals = new Map<string, number>();
     for (const t of app.state.targets) {
       if (t.done) continue;
       for (const r of t.reqs) totals.set(r.materialId, (totals.get(r.materialId) || 0) + r.qty);
@@ -245,26 +267,28 @@ export const Tracker = (() => {
     return totals;
   }
 
-  function commit() {
+  function commit(): void {
     app.save();
     render();
   }
 
-  function render() {
+  function render(): void {
     renderMaterials();
     renderTargets();
     refreshSelects();
   }
 
   // 目標登録フォームの素材プルダウンを最新の素材一覧に合わせる（選択は維持）
-  function refreshSelects() {
-    for (const select of document.querySelectorAll('#req-rows select')) {
+  function refreshSelects(): void {
+    // <HTMLSelectElement> で、見つかる要素の種類を TypeScript に伝える
+    for (const select of document.querySelectorAll<HTMLSelectElement>('#req-rows select')) {
       select.replaceWith(materialSelect(select.value));
     }
   }
 
-  function renderMaterials() {
-    const tbody = document.querySelector('#material-table tbody');
+  function renderMaterials(): void {
+    // 表の <tbody>（index.html に1つだけある）
+    const tbody = byId('material-table', HTMLTableElement).tBodies[0];
     const totals = requiredTotals();
     tbody.replaceChildren();
 
@@ -278,21 +302,27 @@ export const Tracker = (() => {
   }
 
   // 素材1行分。全素材の合計表と、各目標の中の表で使う
-  function materialRow(m, need, { deletable = false, sharedWith = [] } = {}) {
+  // deletable は削除ボタンを出すか、sharedWith はこの素材を使うほかの目標の名前
+  function materialRow(
+    m: Material,
+    need: number,
+    { deletable = false, sharedWith = [] }: { deletable?: boolean; sharedWith?: string[] } = {},
+  ): HTMLTableRowElement {
     const short = Math.max(0, need - m.owned);
     const runs = short === 0 ? '—' : m.perRun > 0 ? `約${formatNum(Math.ceil(short / m.perRun))}周` : '—';
 
     const ownedInput = el('input', {
       type: 'number', min: '0', value: m.owned, class: 'num',
       'aria-label': `${m.name}の所持数`,
-      onchange: (e) => { m.owned = toNum(e.target.value); commit(); },
     });
+    ownedInput.addEventListener('change', () => { m.owned = toNum(ownedInput.value); commit(); });
     const perRunInput = el('input', {
       type: 'number', min: '0', step: '0.01', value: m.perRun || '', class: 'num',
       'aria-label': `${m.name}の1周あたり平均ドロップ`,
-      onchange: (e) => { m.perRun = toNum(e.target.value); commit(); },
     });
-    const step = (d) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
+    perRunInput.addEventListener('change', () => { m.perRun = toNum(perRunInput.value); commit(); });
+    const step = (d: number) => () => { m.owned = Math.max(0, m.owned + d); commit(); };
+    const source = MaterialSource.of(m.name);
 
     return el('tr', { class: short > 0 ? 'short' : need > 0 ? 'ok' : '' }, [
       el('td', {}, el('div', { class: 'mat-name' }, [
@@ -314,7 +344,7 @@ export const Tracker = (() => {
             type: 'button', class: 'link', text: m.name, title: 'クリックで名前を変更',
             onclick: () => renameMaterial(m),
           }),
-          MaterialSource.of(m.name) ? el('small', { class: 'mat-source', text: `入手: ${MaterialSource.of(m.name)}` }) : null,
+          source ? el('small', { class: 'mat-source', text: `入手: ${source}` }) : null,
         ]),
         sharedWith.length ? el('span', {
           class: 'badge shared', text: '共通',
@@ -337,14 +367,15 @@ export const Tracker = (() => {
     ]);
   }
 
-  async function setMaterialIcon(m) {
+  async function setMaterialIcon(m: Material): Promise<void> {
     const file = await MaterialIcon.pickFile();
     if (!file) return;
-    let icon;
+    let icon: string;
     try {
       icon = await MaterialIcon.fileToIcon(file);
     } catch (e) {
-      alert(e.message);
+      // catch で受け取る値は Error とは限らないので確かめる
+      alert(e instanceof Error ? e.message : String(e));
       return;
     }
     const prev = m.icon;
@@ -357,13 +388,13 @@ export const Tracker = (() => {
     render();
   }
 
-  function removeMaterialIcon(m) {
+  function removeMaterialIcon(m: Material): void {
     if (!confirm(`「${m.name}」の画像を外しますか？`)) return;
     delete m.icon;
     commit();
   }
 
-  function renameMaterial(m) {
+  function renameMaterial(m: Material): void {
     const name = prompt('新しい素材名', m.name)?.trim();
     if (!name || name === m.name) return;
     if (app.state.materials.some((x) => x.name === name)) {
@@ -374,7 +405,7 @@ export const Tracker = (() => {
     commit();
   }
 
-  function deleteMaterial(m) {
+  function deleteMaterial(m: Material): void {
     const used = app.state.targets.filter((t) => t.reqs.some((r) => r.materialId === m.id));
     const msg = used.length
       ? `「${m.name}」は ${used.length} 件の目標で使われています。目標からも取り除いて削除しますか？`
@@ -385,8 +416,8 @@ export const Tracker = (() => {
     commit();
   }
 
-  function renderTargets() {
-    const list = document.getElementById('target-list');
+  function renderTargets(): void {
+    const list = byId('target-list', HTMLDivElement);
     list.replaceChildren();
 
     if (app.state.targets.length === 0) {
@@ -414,8 +445,9 @@ export const Tracker = (() => {
   }
 
   // 目標の大分類。分類を持たない以前の目標は、名前からプリセットを探して決める
-  let labelCategories;
-  function categoryOf(t) {
+  // 目標名 → 分類 の表。初めて使うときに作る
+  let labelCategories: Map<string, Category> | undefined;
+  function categoryOf(t: Target): Category {
     if (t.category) return t.category;
     if (!labelCategories) {
       labelCategories = new Map(PRESETS.map((p) => [presetLabel(p), presetCategory(p)]));
@@ -425,7 +457,7 @@ export const Tracker = (() => {
   }
 
   // 素材ごとの達成率の平均（ルピのように桁が大きい素材があっても偏らないように）
-  function progressOf(t) {
+  function progressOf(t: Target): { ratio: number; readyCount: number } {
     if (t.reqs.length === 0) return { ratio: 1, readyCount: 0 };
     let sum = 0;
     let readyCount = 0;
@@ -437,7 +469,8 @@ export const Tracker = (() => {
     return { ratio: sum / t.reqs.length, readyCount };
   }
 
-  function targetCard(t, active) {
+  // active は未完了の目標の一覧（「共通」の表示に使う）
+  function targetCard(t: Target, active: Target[]): HTMLDetailsElement {
     const { ratio, readyCount } = progressOf(t);
     const ready = readyCount === t.reqs.length;
     const status = t.done ? '完了' : ready ? '素材そろった！' : `${readyCount}/${t.reqs.length}種そろった`;
@@ -450,7 +483,7 @@ export const Tracker = (() => {
       t.done ? null : el('div', { class: 'bar small' }, el('div', { class: 'bar-fill', style: `width:${ratio * 100}%` })),
     ]);
 
-    let body;
+    let body: HTMLElement;
     if (t.done) {
       // 完了済みは使った素材を一覧で表示するだけ
       body = el('ul', { class: 'done-items' }, t.reqs.map((r) => {
@@ -494,7 +527,7 @@ export const Tracker = (() => {
     ]);
   }
 
-  function completeTarget(t) {
+  function completeTarget(t: Target): void {
     if (!confirm(`「${t.name}」を完了にして、所持数から素材を差し引きますか？`)) return;
     for (const r of t.reqs) {
       const m = findMaterial(r.materialId);
@@ -504,7 +537,7 @@ export const Tracker = (() => {
     commit();
   }
 
-  function undoTarget(t) {
+  function undoTarget(t: Target): void {
     if (!confirm(`「${t.name}」を未完了に戻して、消費した素材を所持数に戻しますか？`)) return;
     for (const r of t.reqs) {
       const m = findMaterial(r.materialId);
@@ -514,7 +547,7 @@ export const Tracker = (() => {
     commit();
   }
 
-  function duplicateTarget(t) {
+  function duplicateTarget(t: Target): void {
     app.state.targets.push({
       id: uid(),
       name: `${t.name}（コピー）`,
@@ -525,7 +558,7 @@ export const Tracker = (() => {
     commit();
   }
 
-  function deleteTarget(t) {
+  function deleteTarget(t: Target): void {
     if (!confirm(`「${t.name}」を削除しますか？（所持数は変わりません）`)) return;
     app.state.targets = app.state.targets.filter((x) => x.id !== t.id);
     setOpen(t.id, false);

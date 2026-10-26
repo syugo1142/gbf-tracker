@@ -52,14 +52,14 @@ main に push すると、GitHub Actions がビルドして GitHub Pages に公�
 ```
 index.html
 src/
-├─ main.js      # 画面の入口（各ファイルを読み込んで起動する）
+├─ main.ts      # 画面の入口（各ファイルを読み込んで起動する）
 ├─ style.css    # 見た目
 ├─ storage.ts   # localStorage への保存と読み込み、保存データの型
 ├─ util.ts      # DOM 生成ヘルパーなど
 ├─ icons.ts     # 素材のアイコン画像
 ├─ presets.ts   # 目標プリセット（必要素材データ）
 ├─ sources.ts   # 素材の入手先
-├─ tracker.js   # 素材トラッカー
+├─ tracker.ts   # 素材トラッカー
 ├─ app.ts       # データの保持
 ├─ backup.ts    # バックアップ
 └─ tsconfig.json # 画面用の TypeScript の設定（ブラウザ向け）
