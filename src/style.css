@@ -1,28 +1,31 @@
-/* 空のテーマ（青空） */
+/* 夜空のテーマ（黒ベース） */
 :root {
-  /* 文字と背景の明るさの差（コントラスト比）が 4.5 以上になる濃さにしている */
-  --sky-top: #1a62ad;
-  --sky-bottom: #2b70c2;
-  --bg: #eef5fc;
-  --card: #ffffff;
-  --card-shadow: 0 2px 10px rgba(31, 70, 120, .08);
-  --text: #1f2d4a;
-  --muted: #4a5872;
-  --border: #d6e2f0;
-  --field: #f7fafe;
-  --accent: #2468b3;
-  --accent-text: #ffffff;
+  /* ブラウザの入力欄やスクロールバーも暗い色で表示させる */
+  color-scheme: dark;
+  /* 文字と背景の明るさの差（コントラスト比）が 4.5 以上になる明るさにしている */
+  --sky-top: #16294a;
+  --sky-bottom: #1b3259;
+  --bg: #0f1724;
+  --card: #18233a;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+  --text: #e6ecf5;
+  --muted: #a3b1c6;
+  --border: #2b3a55;
+  --field: #111b2d;
+  --accent: #7cb2f5;
+  --accent-text: #0f1724;
   --gold: #d1a131;
   --gold-light: #f2d27a;
-  --good: #17703c;
-  --bad: #c9362b;
-  --good-bg: #e7f6ed;
+  --good: #5fd38d;
+  --bad: #ff8a80;
+  --good-bg: #16352a;
   /* 属性の色。アイコンの白い頭文字が読めるように濃くしている（光だけは明るい黄色に濃い文字） */
   --el-fire: #c53a2e;
   --el-water: #2468b3;
   --el-earth: #8c5d1e;
   --el-wind: #1f7a45;
   --el-light: #e8c547;
+  --el-light-text: #1f2d4a; /* 光のアイコンは背景が明るい黄色なので、頭文字は暗い色にする */
   --el-dark: #7b4fc4;
   --el-none: #636b7d;
 }
@@ -46,7 +49,7 @@ body {
   padding: 14px 16px;
   color: #fff;
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
-  box-shadow: 0 2px 12px rgba(20, 60, 110, .25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .4);
   overflow: hidden;
 }
 .app-header h1 {
@@ -282,7 +285,7 @@ details.card[open] > summary { margin-bottom: 12px; }
 .el-water { background: var(--el-water); }
 .el-earth { background: var(--el-earth); }
 .el-wind { background: var(--el-wind); }
-.el-light { background: var(--el-light); color: var(--text); }
+.el-light { background: var(--el-light); color: var(--el-light-text); }
 .el-dark { background: var(--el-dark); }
 
 .icon-wrap { position: relative; display: inline-flex; }
