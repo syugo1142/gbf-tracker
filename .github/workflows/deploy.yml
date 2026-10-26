@@ -32,6 +32,8 @@ jobs:
           cache: npm
 
       - run: npm ci
+      # Vite のビルドは型を確かめないので、先に型チェックをする。失敗したらここで止まり、公開しない
+      - run: npm run typecheck
       - run: npm run build
 
       # ビルドしてできた dist フォルダを、公開用にまとめて渡す
