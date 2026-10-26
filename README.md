@@ -56,6 +56,8 @@ server/
 └─ server.ts    # 端末間の同期機能（作成中。公開ページでは使っていない）
 package.json    # サーバーの起動と型チェックのコマンド、開発用の道具
 tsconfig.json   # TypeScript の型チェックの設定
+.github/workflows/
+└─ typecheck.yml # push のたびに GitHub Actions で型チェックを実行する
 ```
 ファイルを直接開いても動くように、ES Modulesは使わず、普通のscriptタグで読み込んでいます。
 

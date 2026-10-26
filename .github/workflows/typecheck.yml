@@ -1,0 +1,29 @@
+# push とプルリクエストのたびに、サーバーの型チェックを自動で実行する
+name: 型チェック
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# このワークフローに与える権限。読むだけにして、万一のときの被害を小さくする
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # リポジトリの中身を取り出す。版はタグではなくコミットの ID で固定する（タグは後から付け替えられるため）
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
