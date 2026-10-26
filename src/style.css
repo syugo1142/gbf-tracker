@@ -11,7 +11,8 @@
   --text: #e6ecf5;
   --muted: #a3b1c6;
   --border: #2b3a55;
-  --field: #111b2d;
+  --field: #26354f; /* 入力欄。カードより少し明るくして、凹んだ穴に見えないようにする */
+  --tile: #1f2b44;  /* カードの中のタイルや目標。枠線ではなく背景の明るさで区切る */
   --accent: #7cb2f5;
   --accent-text: #0f1724;
   --gold: #d1a131;
@@ -66,7 +67,7 @@ main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
 /* ---------- カード ---------- */
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 18px;
@@ -80,10 +81,12 @@ input, select, button {
   font: inherit;
   color: var(--text);
   background: var(--field);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 7px 10px;
 }
+/* 入力欄は背景の明るさで見分けられるので枠を消し、ボタンだけ枠を残す */
+button { border-color: var(--border); }
 input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--card); }
 
 button { cursor: pointer; background: var(--card); transition: background .15s, border-color .15s; }
@@ -105,9 +108,10 @@ button.link {
   padding: 0;
   text-align: left;
   font-weight: bold;
-  text-decoration: underline dotted var(--muted);
+  text-decoration: none;
   text-underline-offset: 3px;
 }
+button.link:hover { text-decoration: underline; }
 
 #preset-form select { min-width: 0; }
 #preset-form select[name="group"] { flex: 1 1 180px; }
@@ -168,10 +172,10 @@ input.num { width: 80px; }
 
 .target {
   margin: 0;
-  border: 1px solid var(--border);
+  border: none;
   border-left: 4px solid var(--accent);
   border-radius: 10px;
-  background: var(--card);
+  background: var(--tile);
   overflow: hidden;
 }
 .target > summary {
@@ -217,25 +221,25 @@ input.num { width: 80px; }
 
 /* 全素材の合計（折りたたみカード） */
 /* 素材ごとのタイルを、画面の幅に合わせて何列かに並べる */
-.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
-.mat-tile {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--border);
-  border-radius: 10px;
-  background: var(--card);
-}
-.mat-tile.short { border-left-color: var(--bad); }
-.mat-tile.ok { border-left-color: var(--good); background: var(--good-bg); }
+.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.mat-tile { display: grid; gap: 10px; align-content: start; padding: 14px; border-radius: 12px; background: var(--tile); }
+.mat-tile .mat-name { gap: 12px; }
 .mat-tile .mat-label { flex: 1; min-width: 0; }
-.mat-delete { font-size: .85rem; padding: 2px 8px; }
-.mat-stats { display: flex; gap: 14px; }
+.mat-main { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+/* いちばん大事な「あと何個足りないか」を大きく出す */
+.mat-short { display: flex; flex-direction: column; line-height: 1.15; }
+.mat-short-label { font-size: .8rem; color: var(--muted); }
+.mat-short-num { font-size: 1.8rem; font-weight: bold; color: var(--bad); font-variant-numeric: tabular-nums; }
+.mat-done { padding-bottom: 6px; font-weight: bold; color: var(--good); }
+.mat-tile:not(.ok) .mat-done { font-weight: normal; color: var(--muted); }
+.mat-owned { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.mat-sub { margin: 0; font-size: .85rem; color: var(--muted); }
+.mat-more { margin: 0; padding-top: 8px; border-top: 1px solid var(--border); }
+.mat-more > summary { margin: 0; font-size: .85rem; }
+.mat-more[open] > summary { margin-bottom: 8px; }
 .mat-field { display: flex; align-items: center; gap: 8px; }
-.mat-field-label { flex: none; width: 4.5em; color: var(--muted); font-size: .9rem; }
-.mat-runs { color: var(--muted); font-size: .9rem; }
+.mat-field-label { flex: none; color: var(--muted); font-size: .8rem; }
+.mat-delete { margin-left: auto; font-size: .85rem; padding: 2px 10px; }
 
 details.card { margin-top: 0; }
 details.card > summary { margin: 0; color: var(--text); }

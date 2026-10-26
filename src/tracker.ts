@@ -351,24 +351,31 @@ export const Tracker = (() => {
     return input;
   }
 
-  // 全素材の合計の、素材1つ分のタイル
+  // 全素材の合計の、素材1つ分のタイル。いちばん大事な不足数を大きく出し、1周平均と削除は開いたときだけ出す
   function materialTile(m: Material, need: number): HTMLDivElement {
     const short = Math.max(0, need - m.owned);
+    const status = short > 0
+      ? el('div', { class: 'mat-short' }, [
+          el('span', { class: 'mat-short-label', text: '不足' }),
+          el('span', { class: 'mat-short-num', text: formatNum(short) }),
+        ])
+      : el('div', { class: 'mat-done', text: need > 0 ? '✓ そろった' : '使う目標なし' });
+    const sub = [`必要 ${formatNum(need)}`];
+    if (short > 0 && m.perRun > 0) sub.push(runsText(m, short));
     return el('div', { class: `mat-tile ${statusClass(need, short)}` }, [
-      el('div', { class: 'mat-name' }, [
-        iconControl(m, 40),
-        nameLabel(m),
-        el('button', { type: 'button', class: 'icon danger mat-delete', text: '削除', onclick: () => deleteMaterial(m) }),
+      el('div', { class: 'mat-name' }, [iconControl(m, 44), nameLabel(m)]),
+      el('div', { class: 'mat-main' }, [
+        status,
+        el('div', { class: 'mat-owned' }, [el('span', { class: 'mat-field-label', text: '所持' }), ownedStepper(m)]),
       ]),
-      el('div', { class: 'mat-stats' }, [
-        el('span', { text: `必要 ${formatNum(need)}` }),
-        el('span', { class: 'short-cell', text: `不足 ${formatNum(short)}` }),
-      ]),
-      el('div', { class: 'mat-field' }, [el('span', { class: 'mat-field-label', text: '所持' }), ownedStepper(m)]),
-      el('div', { class: 'mat-field' }, [
-        el('span', { class: 'mat-field-label', text: '1周平均' }),
-        perRunInput(m),
-        el('span', { class: 'mat-runs', text: runsText(m, short) }),
+      el('p', { class: 'mat-sub', text: sub.join('・') }),
+      details(`mat-${m.id}`, { class: 'mat-more' }, [
+        el('summary', { text: '1周平均・削除' }),
+        el('div', { class: 'mat-field' }, [
+          el('span', { class: 'mat-field-label', text: '1周平均' }),
+          perRunInput(m),
+          el('button', { type: 'button', class: 'icon danger mat-delete', text: '削除', onclick: () => deleteMaterial(m) }),
+        ]),
       ]),
     ]);
   }
