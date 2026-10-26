@@ -24,8 +24,10 @@
       <p class="hint" id="preset-info"></p>
       <details>
         <summary>自分で素材を指定して登録</summary>
+        <p class="hint">素材名を入力すると候補が出ます。まだ登録していない素材は、所持数0で「全素材の合計」に追加されます。</p>
         <form id="target-form">
         <div id="req-rows"></div>
+        <datalist id="material-names"></datalist>
         <div class="row-buttons">
           <button type="button" id="add-req-row">＋ 素材を追加</button>
           <button type="submit">目標を登録</button>

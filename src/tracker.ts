@@ -74,17 +74,19 @@ export const Tracker = (() => {
     const targetForm = byId('target-form', HTMLFormElement);
     targetForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const reqs = [...document.querySelectorAll('#req-rows .req-row')]
+      const rows = [...document.querySelectorAll('#req-rows .req-row')]
         .map((row) => ({
-          materialId: row.querySelector('select')?.value ?? '',
-          qty: toNum(row.querySelector('input')?.value),
+          // 前の版の仮の名前で入力されても、正式名称にそろえる
+          name: renamed(row.querySelector<HTMLInputElement>('.req-name')?.value.trim() ?? ''),
+          qty: toNum(row.querySelector<HTMLInputElement>('.req-qty')?.value),
         }))
-        .filter((r) => r.materialId && r.qty > 0);
-      if (reqs.length === 0) {
-        alert('素材を1つ以上（個数1以上）選んでください');
+        .filter((r) => r.name && r.qty > 0);
+      if (rows.length === 0) {
+        alert('素材名を1つ以上（個数1以上）入力してください');
         return;
       }
-      const merged = mergeReqs(reqs);
+      // 未登録の素材はここで登録される
+      const merged = mergeReqs(rows.map((r) => ({ materialId: materialByName(r.name).id, qty: r.qty })));
       // 目標名は素材から自動で付ける（例:「ヒヒイロカネ ほか2種」）
       const first = findMaterial(merged[0].materialId)?.name ?? '';
       const name = merged.length > 1 ? `${first} ほか${merged.length - 1}種` : first;
@@ -112,12 +114,18 @@ export const Tracker = (() => {
     render();
   }
 
+  // 前の版の仮の名前なら正式名称を、そうでなければそのままの名前を返す
+  // Object.hasOwn で、移行表に自分で書いた名前だけを見る（「constructor」など、どのオブジェクトにもある名前を拾わないため）
+  function renamed(name: string): string {
+    return Object.hasOwn(PRESET_RENAMES, name) ? PRESET_RENAMES[name] : name;
+  }
+
   // 仮の名前で登録済みの素材を正式名称に置き換える。同名の素材がすでにあれば1つにまとめる
   function migrateMaterialNames(): void {
     let changed = false;
     for (const m of [...app.state.materials]) {
-      const to = PRESET_RENAMES[m.name];
-      if (!to) continue;
+      const to = renamed(m.name);
+      if (to === m.name) continue;
       const existing = app.state.materials.find((x) => x.name === to);
       if (existing) {
         existing.owned += m.owned;
@@ -134,6 +142,9 @@ export const Tracker = (() => {
     }
     if (changed) app.save();
   }
+
+  // プリセットに出てくる素材の名前（重複なし、最初に出てきた順）。素材名の入力欄の候補に使う
+  const PRESET_MATERIAL_NAMES = [...new Set(PRESETS.flatMap((p) => p.reqs.map((r) => r.name)))];
 
   // プリセットを選ぶ欄で、2段目（キャラ名など）を何と呼ぶか。ここにないコンテンツは「武器」
   const SUB_LABELS: Record<string, string> = { 十天衆: 'キャラ', 十賢者: 'キャラ', '天星器（十天衆加入）': '変更先の属性' };
@@ -207,16 +218,19 @@ export const Tracker = (() => {
     });
   }
 
+  // 名前で素材を探す。まだ登録されていなければ所持数0で登録する
+  function materialByName(name: string): Material {
+    let m = app.state.materials.find((x) => x.name === name);
+    if (!m) {
+      m = { id: uid(), name, owned: 0, perRun: 0 };
+      app.state.materials.push(m);
+    }
+    return m;
+  }
+
   // プリセットから目標を作る。未登録の素材は所持数0で自動追加する
   function addTargetFromPreset(preset: Preset, count: number): void {
-    const reqs = preset.reqs.map((r) => {
-      let m = app.state.materials.find((x) => x.name === r.name);
-      if (!m) {
-        m = { id: uid(), name: r.name, owned: 0, perRun: 0 };
-        app.state.materials.push(m);
-      }
-      return { materialId: m.id, qty: r.qty * count };
-    });
+    const reqs = preset.reqs.map((r) => ({ materialId: materialByName(r.name).id, qty: r.qty * count }));
     app.state.targets.push({
       id: uid(),
       name: count > 1 ? `${presetLabel(preset)} ×${count}` : presetLabel(preset),
@@ -237,19 +251,15 @@ export const Tracker = (() => {
   function addReqRow(): void {
     // 削除ボタンの中で row 自身を使うので、型を先に書いておく（書かないと TypeScript が型を決められない）
     const row: HTMLDivElement = el('div', { class: 'req-row' }, [
-      materialSelect(),
-      el('input', { type: 'number', min: '1', placeholder: '個数', 'aria-label': '個数' }),
+      // list で候補（index.html の <datalist id="material-names">）をつなぐ。autocomplete は、ブラウザが覚えた入力履歴を混ぜないために切る
+      el('input', {
+        class: 'req-name', list: 'material-names', autocomplete: 'off',
+        placeholder: '素材名（入力すると候補が出ます）', 'aria-label': '素材名',
+      }),
+      el('input', { class: 'req-qty', type: 'number', min: '1', placeholder: '個数', 'aria-label': '個数' }),
       el('button', { type: 'button', text: '×', class: 'icon', 'aria-label': 'この行を削除', onclick: () => row.remove() }),
     ]);
     byId('req-rows', HTMLDivElement).append(row);
-  }
-
-  function materialSelect(selectedId = ''): HTMLSelectElement {
-    const select = el('select', { 'aria-label': '素材' }, el('option', { value: '', text: '素材を選択' }));
-    for (const m of app.state.materials) {
-      select.append(el('option', { value: m.id, text: m.name, selected: m.id === selectedId }));
-    }
-    return select;
   }
 
   // 素材が見つからないとき（削除済みなど）は undefined
@@ -275,15 +285,13 @@ export const Tracker = (() => {
   function render(): void {
     renderMaterials();
     renderTargets();
-    refreshSelects();
+    refreshMaterialNames();
   }
 
-  // 目標登録フォームの素材プルダウンを最新の素材一覧に合わせる（選択は維持）
-  function refreshSelects(): void {
-    // <HTMLSelectElement> で、見つかる要素の種類を TypeScript に伝える
-    for (const select of document.querySelectorAll<HTMLSelectElement>('#req-rows select')) {
-      select.replaceWith(materialSelect(select.value));
-    }
+  // 素材名の入力欄の候補を、登録済みの素材（先に並べる）とプリセットに出てくる素材に合わせる
+  function refreshMaterialNames(): void {
+    const names = new Set([...app.state.materials.map((m) => m.name), ...PRESET_MATERIAL_NAMES]);
+    byId('material-names', HTMLDataListElement).replaceChildren(...[...names].map((name) => el('option', { value: name })));
   }
 
   function renderMaterials(): void {

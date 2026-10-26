@@ -16,8 +16,8 @@ export function el<K extends keyof HTMLElementTagNameMap>(
     if (key === 'class') node.className = String(value);
     else if (key === 'text') node.textContent = value == null ? '' : String(value);
     else if (key.startsWith('on')) node.addEventListener(key.slice(2), value as EventListener);
-    else if (key in node) Reflect.set(node, key, value);
-    else node.setAttribute(key, String(value));
+    // プロパティとして入れる。input の list のように読み取り専用のものは Reflect.set が false を返すので、属性で入れる
+    else if (!(key in node) || !Reflect.set(node, key, value)) node.setAttribute(key, String(value));
   }
   for (const child of Array.isArray(children) ? children : [children]) {
     if (child == null) continue;

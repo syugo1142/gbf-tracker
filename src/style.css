@@ -7,7 +7,7 @@
   --card: #ffffff;
   --card-shadow: 0 2px 10px rgba(31, 70, 120, .08);
   --text: #1f2d4a;
-  --muted: #56647e;
+  --muted: #4a5872;
   --border: #d6e2f0;
   --field: #f7fafe;
   --accent: #2468b3;
@@ -31,7 +31,8 @@
 
 body {
   margin: 0;
-  font-family: system-ui, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  /* Windows の游ゴシックは線が細く薄く見えるので、メイリオを先にする（Mac などはヒラギノ）。天井計算と同じ */
+  font-family: "Meiryo", "Hiragino Sans", system-ui, sans-serif;
   color: var(--text);
   line-height: 1.6;
   background-color: var(--bg);
@@ -58,7 +59,7 @@ body {
 .app-header h1::before { content: '✦ '; color: var(--gold-light); }
 
 main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
-.app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .8rem; }
+.app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .85rem; }
 
 /* ---------- カード ---------- */
 .card {
@@ -135,8 +136,8 @@ details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 .inline-form .field input[type="number"] { width: 160px; }
 
 .req-row { display: flex; gap: 8px; margin-bottom: 8px; }
-.req-row select { flex: 1; min-width: 0; }
-.req-row input { width: 90px; }
+.req-row .req-name { flex: 1; min-width: 0; }
+.req-row .req-qty { width: 90px; }
 
 .row-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -153,7 +154,7 @@ input.num { width: 80px; }
 .stepper { display: flex; align-items: center; gap: 4px; }
 .stepper button { border-radius: 50%; width: 30px; height: 30px; padding: 0; }
 
-.empty, .hint { color: var(--muted); font-size: .9rem; }
+.empty, .hint { color: var(--muted); font-size: .95rem; }
 
 /* ---------- 目標リスト ---------- */
 #target-list { margin-top: 8px; display: grid; gap: 10px; }
