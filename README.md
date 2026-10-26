@@ -56,12 +56,12 @@ src/
 ├─ style.css    # 見た目
 ├─ storage.ts   # localStorage への保存と読み込み、保存データの型
 ├─ util.ts      # DOM 生成ヘルパーなど
-├─ icons.js     # 素材のアイコン画像
+├─ icons.ts     # 素材のアイコン画像
 ├─ presets.js   # 目標プリセット（必要素材データ）
 ├─ sources.js   # 素材の入手先
 ├─ tracker.js   # 素材トラッカー
 ├─ app.ts       # データの保持
-├─ backup.js    # バックアップ
+├─ backup.ts    # バックアップ
 └─ tsconfig.json # 画面用の TypeScript の設定（ブラウザ向け）
 server/
 └─ server.ts    # 端末間の同期機能（作成中。公開ページでは使っていない）

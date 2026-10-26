@@ -1,9 +1,9 @@
-import { el } from './util.ts';
+import { el, byId } from './util.ts';
 import { AppStorage } from './storage.ts';
 import { app } from './app.ts';
 
 // バックアップ
-document.getElementById('export-btn').addEventListener('click', () => {
+byId('export-btn', HTMLButtonElement).addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(app.state, null, 2)], { type: 'application/json' });
   const a = el('a', {
     href: URL.createObjectURL(blob),
@@ -14,16 +14,19 @@ document.getElementById('export-btn').addEventListener('click', () => {
 });
 
 // ファイル選択欄は見た目を整えにくいので隠し、キーボードでも押せる普通のボタンから開く
-document.getElementById('import-btn').addEventListener('click', () => {
-  document.getElementById('import-file').click();
+const importFile = byId('import-file', HTMLInputElement);
+
+byId('import-btn', HTMLButtonElement).addEventListener('click', () => {
+  importFile.click();
 });
 
-document.getElementById('import-file').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  e.target.value = '';
+importFile.addEventListener('change', async () => {
+  const file = importFile.files?.[0];
+  importFile.value = '';
   if (!file) return;
   try {
-    const data = JSON.parse(await file.text());
+    // JSON の中身はどんな形か分からないので unknown にし、normalize で形を整える
+    const data: unknown = JSON.parse(await file.text());
     if (!confirm('現在のデータを読み込んだデータで上書きしますか？')) return;
     app.state = AppStorage.normalize(data);
     app.save();
@@ -33,7 +36,7 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   }
 });
 
-document.getElementById('reset-btn').addEventListener('click', () => {
+byId('reset-btn', HTMLButtonElement).addEventListener('click', () => {
   if (!confirm('すべてのデータを削除します。よろしいですか？')) return;
   app.state = AppStorage.defaults();
   app.save();

@@ -26,6 +26,14 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+// index.html にある要素を id で取り出す。type には欲しい要素の種類（HTMLButtonElement など）を渡す
+// 見つからないときや種類が違うときはエラーにする（index.html の id を変えたときに、すぐ気づけるように）
+export function byId<T extends HTMLElement>(id: string, type: new () => T): T {
+  const node = document.getElementById(id);
+  if (!(node instanceof type)) throw new Error(`#${id} が見つからないか、種類が違います`);
+  return node;
+}
+
 export function uid(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }

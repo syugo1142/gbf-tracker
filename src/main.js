@@ -2,6 +2,6 @@
 import './style.css';
 import { app } from './app.ts';
 import { Tracker } from './tracker.js';
-import './backup.js';
+import './backup.ts';
 
 Tracker.init(app);

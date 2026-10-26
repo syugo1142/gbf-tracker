@@ -1,5 +1,5 @@
 import { el, uid, toNum, formatNum } from './util.ts';
-import { MaterialIcon } from './icons.js';
+import { MaterialIcon } from './icons.ts';
 import { MaterialSource } from './sources.js';
 import { PRESETS, PRESET_RENAMES, PRESET_CATEGORIES, presetCategory, presetLabel } from './presets.js';
 

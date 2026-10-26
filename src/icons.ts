@@ -1,11 +1,13 @@
 import { el } from './util.ts';
+import type { Material } from './storage.ts';
 
 // 素材アイコン: 登録した画像があればそれを、なければ属性の色＋頭文字のアイコンを表示する
 export const MaterialIcon = (() => {
   const ICON_SIZE = 64; // 保存する画像の一辺(px)
 
   // 素材名から属性を推定するためのキーワード。上から順に調べ、最初に当たった属性にする
-  const ELEMENT_KEYWORDS = [
+  // 型を書かないと「文字列か文字列の配列が並んだ配列」と推論され、[属性, キーワード] の組として扱えないので書いておく
+  const ELEMENT_KEYWORDS: [string, string[]][] = [
     ['fire', ['火', '炎', '灼熱', 'ファイア', 'イグニス', 'イグナイト', '赤竜鱗', '赤の依代', '赤星', 'ウィルナス', 'アトゥム', 'シヴァ']],
     ['water', ['水', 'アクア', 'アビサル', '青竜鱗', '青の依代', '青星', 'ワムデュス', 'テフヌト', 'エウロペ']],
     ['earth', ['土', 'アース', 'テラ', 'インシュラー', '地竜鱗', '黄の依代', '黄星', 'ブローディア', '巨人', 'ガレヲン', 'ベンヌ', 'ゴブロ']],
@@ -14,7 +16,7 @@ export const MaterialIcon = (() => {
     ['dark', ['闇', 'ダーク', 'トーデス', '黒竜鱗', '黒の依代', '黒星', 'フェディエル', 'オシリス', 'アバター']],
   ];
 
-  function elementOf(name) {
+  function elementOf(name: string): string {
     for (const [element, words] of ELEMENT_KEYWORDS) {
       if (words.some((w) => name.includes(w))) return element;
     }
@@ -22,7 +24,7 @@ export const MaterialIcon = (() => {
   }
 
   // 表示用のアイコン要素を作る
-  function create(material, size = 32) {
+  function create(material: Material, size = 32): HTMLSpanElement {
     const box = el('span', { class: `mat-icon el-${elementOf(material.name)}` });
     box.style.setProperty('--size', `${size}px`);
     if (material.icon) {
@@ -34,20 +36,25 @@ export const MaterialIcon = (() => {
   }
 
   // 画像ファイルを正方形に切り抜いて縮小し、data URL にする
-  function fileToIcon(file) {
+  function fileToIcon(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = ICON_SIZE;
+        // 描画の機能が使えないブラウザでは null が返る
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('画像を縮小できませんでした'));
+          return;
+        }
         const side = Math.min(img.naturalWidth, img.naturalHeight);
         const sx = (img.naturalWidth - side) / 2;
         const sy = (img.naturalHeight - side) / 2;
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = ICON_SIZE;
-        const ctx = canvas.getContext('2d');
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, sx, sy, side, side, 0, 0, ICON_SIZE, ICON_SIZE);
-        URL.revokeObjectURL(url);
         // WebP 非対応のブラウザでは PNG になる
         resolve(canvas.toDataURL('image/webp', 0.85));
       };
@@ -60,10 +67,10 @@ export const MaterialIcon = (() => {
   }
 
   // 画像ファイルを選ばせる。キャンセル時は null
-  function pickFile() {
+  function pickFile(): Promise<File | null> {
     return new Promise((resolve) => {
       const input = el('input', { type: 'file', accept: 'image/*' });
-      input.addEventListener('change', () => resolve(input.files[0] || null));
+      input.addEventListener('change', () => resolve(input.files?.[0] ?? null));
       input.click();
     });
   }
