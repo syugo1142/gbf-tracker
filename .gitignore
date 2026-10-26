@@ -6,6 +6,7 @@
 *.jpg
 *.jpeg
 *.webp
+!docs/screenshot.png
 node_modules/
 dist/
 CLAUDE.md
