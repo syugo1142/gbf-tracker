@@ -1,7 +1,7 @@
 import { el } from './util.ts';
 import type { Material } from './storage.ts';
 
-// 素材アイコン: 登録した画像があればそれを、なければ属性の色＋頭文字のアイコンを表示する
+// 素材アイコン: 登録した画像があればそれを、なければ頭文字のアイコン（右下に属性の色の丸）を表示する
 export const MaterialIcon = (() => {
   const ICON_SIZE = 64; // 保存する画像の一辺(px)
 

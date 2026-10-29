@@ -1,33 +1,30 @@
-/* 夜空のテーマ（黒ベース） */
+/* 濃い灰色のテーマ。アクセントは青緑の1色だけにする（gbfdrop を参考にした） */
 :root {
   /* ブラウザの入力欄やスクロールバーも暗い色で表示させる */
   color-scheme: dark;
   /* 文字と背景の明るさの差（コントラスト比）が 4.5 以上になる明るさにしている */
-  --sky-top: #16294a;
-  --sky-bottom: #1b3259;
-  --bg: #0f1724;
-  --card: #18233a;
-  --card-shadow: 0 2px 12px rgba(0, 0, 0, .35);
-  --text: #e6ecf5;
-  --muted: #a3b1c6;
-  --border: #2b3a55;
-  --field: #26354f; /* 入力欄。カードより少し明るくして、凹んだ穴に見えないようにする */
-  --tile: #1f2b44;  /* カードの中のタイルや目標。枠線ではなく背景の明るさで区切る */
-  --accent: #7cb2f5;
-  --accent-text: #0f1724;
+  --bg: #1a1d21;    /* ページの外側 */
+  --main: #212529;  /* 本文の列 */
+  --card: #212529;
+  --tile: #2b3035;  /* 目標やタイル。枠線ではなく背景の明るさで区切る */
+  --field: #343a40; /* 入力欄。まわりより少し明るくして、凹んだ穴に見えないようにする */
+  --text: #dee2e6;
+  --muted: #adb5bd;
+  --border: #3d434a;
+  --accent: #4fc3d6;
+  --accent-text: #102a2f;
   --gold: #d1a131;
   --gold-light: #f2d27a;
-  --good: #5fd38d;
-  --bad: #ff8a80;
-  --good-bg: #16352a;
-  /* 属性の色。アイコンの白い頭文字が読めるように濃くしている（光だけは明るい黄色に濃い文字） */
-  --el-fire: #c53a2e;
-  --el-water: #2468b3;
-  --el-earth: #8c5d1e;
-  --el-wind: #1f7a45;
+  --good: #7dcf9f;
+  --bad: #ef8f8f;
+  --good-bg: #24382e;
+  /* 属性の色。アイコンの右下の小さな丸に使う */
+  --el-fire: #e5534b;
+  --el-water: #4a9eff;
+  --el-earth: #c08a3e;
+  --el-wind: #3fb96f;
   --el-light: #e8c547;
-  --el-light-text: #1f2d4a; /* 光のアイコンは背景が明るい黄色なので、頭文字は暗い色にする */
-  --el-dark: #7b4fc4;
+  --el-dark: #a77bf0;
   --el-none: #636b7d;
 }
 
@@ -42,39 +39,38 @@ body {
   background-color: var(--bg);
 }
 
-/* ---------- ヘッダー（空） ---------- */
+/* ---------- ヘッダー ---------- */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 14px 16px;
-  color: #fff;
-  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .4);
-  overflow: hidden;
+  padding: 10px 16px;
+  background: var(--main);
+  border-bottom: 1px solid var(--border);
 }
-.app-header h1 {
-  position: relative;
-  margin: 0;
-  font-size: 1.3rem;
-  letter-spacing: .04em;
-  text-shadow: 0 1px 3px rgba(0, 40, 90, .35);
-}
+/* 本文の列（幅 960px、左右の余白 16px）と左端をそろえる */
+.app-header h1 { max-width: 928px; margin: 0 auto; font-size: 1.15rem; letter-spacing: .04em; }
 
-main { max-width: 960px; margin: 0 auto; padding: 20px 16px 24px; }
-.app-footer { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: .85rem; }
-
-/* ---------- カード ---------- */
-.card {
-  background: var(--card);
-  border: none;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 18px;
-  box-shadow: var(--card-shadow);
+/* 本文とフッターは少し明るい灰色の列にし、左右に細い線を引く */
+main, .app-footer {
+  max-width: 960px;
+  margin: 0 auto;
+  background: var(--main);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
-/* 見出しは飾りを付けず、大きさで目立たせる。金色は進捗バーにだけ使う（天井計算と同じ） */
-.card h2 { margin: 0 0 14px; font-size: 1.25rem; }
+main { padding: 16px 16px 24px; }
+.app-footer { padding: 0 16px 32px; color: var(--muted); font-size: .85rem; }
+
+/* ---------- 区切り（カード） ---------- */
+/* 箱で囲まず、見出しの下の線だけで区切る。金色は進捗バーにだけ使う（天井計算と同じ） */
+.card { margin-bottom: 28px; background: var(--card); }
+.card > h2, details.card > summary {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  background: linear-gradient(90deg, var(--accent), transparent 70%) left bottom / 100% 2px no-repeat;
+}
+.card h2 { font-size: 1.15rem; }
 
 /* ---------- 入力・ボタン ---------- */
 input, select, button {
@@ -82,7 +78,7 @@ input, select, button {
   color: var(--text);
   background: var(--field);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 7px 10px;
 }
 /* 入力欄は背景の明るさで見分けられるので枠を消し、ボタンだけ枠を残す */
@@ -92,13 +88,12 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
 button { cursor: pointer; background: var(--card); transition: background .15s, border-color .15s; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button[type="submit"], #export-btn {
-  background: linear-gradient(180deg, #2a73c4, #1f5fa8);
+  background: var(--accent);
   color: var(--accent-text);
-  border-color: #1f5fa8;
+  border-color: var(--accent);
   font-weight: bold;
-  box-shadow: 0 1px 3px rgba(30, 90, 160, .3);
 }
-button[type="submit"]:hover:not(:disabled), #export-btn:hover { background: linear-gradient(180deg, #276fbe, #1c5aa0); }
+button[type="submit"]:hover:not(:disabled), #export-btn:hover { filter: brightness(1.1); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.danger, .danger { color: var(--bad); }
 button.icon { padding: 4px 9px; }
@@ -143,12 +138,12 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); 
 input.num { width: 80px; }
 
 .stepper { display: flex; align-items: center; gap: 4px; }
-.stepper button { border-radius: 50%; width: 30px; height: 30px; padding: 0; }
+.stepper button { width: 30px; height: 30px; padding: 0; }
 
 .empty, .hint { color: var(--muted); font-size: .95rem; }
 
 /* ---------- 目標リスト ---------- */
-#target-list { margin-top: 8px; display: grid; gap: 10px; }
+#target-list { margin-top: 8px; display: grid; gap: 6px; }
 .target-group {
   display: flex;
   align-items: baseline;
@@ -161,7 +156,7 @@ input.num { width: 80px; }
 }
 .target-group-count { font-size: .8rem; font-weight: normal; }
 .list-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 16px; }
-.list-tools button { font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
+.list-tools button { font-size: .85rem; padding: 4px 12px; }
 
 /* 分類のタブ。左に寄せ、「すべて開く」などは右に残す */
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
@@ -172,15 +167,14 @@ input.num { width: 80px; }
 
 .target {
   margin: 0;
-  border: none;
   border-left: 4px solid var(--accent);
-  border-radius: 10px;
+  border-radius: 6px;
   background: var(--tile);
   overflow: hidden;
 }
 .target > summary {
   margin: 0;
-  padding: 12px 14px;
+  padding: 8px 12px;
   color: var(--text);
   list-style: none;
 }
@@ -211,7 +205,7 @@ input.num { width: 80px; }
 .badge {
   font-size: .78rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 4px;
   padding: 1px 10px;
   white-space: nowrap;
   background: var(--field);
@@ -219,10 +213,10 @@ input.num { width: 80px; }
 .target.ready .badge { color: var(--good); border-color: var(--good); background: var(--card); font-weight: bold; }
 .badge.shared { color: var(--accent); border-color: var(--accent); background: none; cursor: help; }
 
-/* 全素材の合計（折りたたみカード） */
+/* 全素材の合計（折りたたみ） */
 /* 素材ごとのタイルを、画面の幅に合わせて何列かに並べる */
-.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.mat-tile { display: grid; gap: 10px; align-content: start; padding: 14px; border-radius: 12px; background: var(--tile); }
+.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.mat-tile { display: grid; gap: 8px; align-content: start; padding: 10px 12px; border-radius: 6px; background: var(--tile); }
 .mat-tile .mat-name { gap: 12px; }
 .mat-tile .mat-label { flex: 1; min-width: 0; }
 .mat-main { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
@@ -242,9 +236,8 @@ input.num { width: 80px; }
 .mat-delete { margin-left: auto; font-size: .85rem; padding: 2px 10px; }
 
 details.card { margin-top: 0; }
-details.card > summary { margin: 0; color: var(--text); }
+details.card > summary { color: var(--text); }
 details.card > summary h2 { display: inline; margin: 0; }
-details.card[open] > summary { margin-bottom: 12px; }
 
 /* ---------- 進捗バー ---------- */
 .bar {
@@ -265,35 +258,50 @@ details.card[open] > summary { margin-bottom: 12px; }
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
 .mat-label { display: flex; flex-direction: column; align-items: flex-start; }
+/* 画像がないときは灰色の四角に頭文字。属性はアイコン全体を塗らず、右下の小さな丸で示す */
 .mat-icon {
   --size: 32px;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
   width: var(--size);
   height: var(--size);
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
-  color: #fff;
+  color: var(--text);
   font-size: calc(var(--size) * 0.5);
   font-weight: bold;
   line-height: 1;
   vertical-align: middle;
-  background: var(--el-none);
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .15);
+  background: var(--field);
+}
+.mat-icon::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 28%;
+  height: 28%;
+  max-width: 10px;
+  max-height: 10px;
+  border-radius: 50%;
+  background: var(--dot, transparent);
 }
 .mat-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.mat-icon:has(img) { background: var(--field); border: 1px solid var(--border); box-shadow: none; }
-.el-fire { background: var(--el-fire); }
-.el-water { background: var(--el-water); }
-.el-earth { background: var(--el-earth); }
-.el-wind { background: var(--el-wind); }
-.el-light { background: var(--el-light); color: var(--el-light-text); }
-.el-dark { background: var(--el-dark); }
+/* 登録した画像には丸を重ねない */
+.mat-icon:has(img) { border: 1px solid var(--border); }
+.mat-icon:has(img)::after { content: none; }
+.el-fire { --dot: var(--el-fire); }
+.el-water { --dot: var(--el-water); }
+.el-earth { --dot: var(--el-earth); }
+.el-wind { --dot: var(--el-wind); }
+.el-light { --dot: var(--el-light); }
+.el-dark { --dot: var(--el-dark); }
 
 .icon-wrap { position: relative; display: inline-flex; }
-.icon-button { padding: 0; border: none; background: none; border-radius: 8px; }
+.icon-button { padding: 0; border: none; background: none; border-radius: 4px; }
 .icon-button:hover .mat-icon, .icon-button:focus-visible .mat-icon { outline: 2px solid var(--accent); outline-offset: 1px; }
 .icon-remove {
   position: absolute;
@@ -313,5 +321,4 @@ details.card[open] > summary { margin-bottom: 12px; }
 /* ---------- スマホ ---------- */
 @media (max-width: 600px) {
   main { padding: 14px 12px 32px; }
-  .card { padding: 14px; }
 }
