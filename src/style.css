@@ -18,13 +18,14 @@
   --good: #7dcf9f;
   --bad: #ef8f8f;
   --good-bg: #24382e;
-  /* 属性の色。アイコンの右下の小さな丸に使う */
-  --el-fire: #e5534b;
-  --el-water: #4a9eff;
-  --el-earth: #c08a3e;
-  --el-wind: #3fb96f;
+  /* 属性の色。アイコンの白い頭文字が読めるように濃くしている（光だけは明るい黄色に濃い文字） */
+  --el-fire: #c53a2e;
+  --el-water: #2468b3;
+  --el-earth: #8c5d1e;
+  --el-wind: #1f7a45;
   --el-light: #e8c547;
-  --el-dark: #a77bf0;
+  --el-light-text: #1f2d4a;
+  --el-dark: #7b4fc4;
   --el-none: #636b7d;
 }
 
@@ -258,10 +259,9 @@ details.card > summary h2 { display: inline; margin: 0; }
 /* ---------- 素材アイコン ---------- */
 .mat-name { display: flex; align-items: center; gap: 10px; }
 .mat-label { display: flex; flex-direction: column; align-items: flex-start; }
-/* 画像がないときは灰色の四角に頭文字。属性はアイコン全体を塗らず、右下の小さな丸で示す */
+/* 画像がないときは、属性の色で塗った四角に頭文字 */
 .mat-icon {
   --size: 32px;
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -270,35 +270,21 @@ details.card > summary h2 { display: inline; margin: 0; }
   height: var(--size);
   border-radius: 4px;
   overflow: hidden;
-  color: var(--text);
+  color: #fff;
   font-size: calc(var(--size) * 0.5);
   font-weight: bold;
   line-height: 1;
   vertical-align: middle;
-  background: var(--field);
-}
-.mat-icon::after {
-  content: '';
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  width: 28%;
-  height: 28%;
-  max-width: 10px;
-  max-height: 10px;
-  border-radius: 50%;
-  background: var(--dot, transparent);
+  background: var(--el-none);
 }
 .mat-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* 登録した画像には丸を重ねない */
-.mat-icon:has(img) { border: 1px solid var(--border); }
-.mat-icon:has(img)::after { content: none; }
-.el-fire { --dot: var(--el-fire); }
-.el-water { --dot: var(--el-water); }
-.el-earth { --dot: var(--el-earth); }
-.el-wind { --dot: var(--el-wind); }
-.el-light { --dot: var(--el-light); }
-.el-dark { --dot: var(--el-dark); }
+.mat-icon:has(img) { background: var(--field); border: 1px solid var(--border); }
+.el-fire { background: var(--el-fire); }
+.el-water { background: var(--el-water); }
+.el-earth { background: var(--el-earth); }
+.el-wind { background: var(--el-wind); }
+.el-light { background: var(--el-light); color: var(--el-light-text); }
+.el-dark { background: var(--el-dark); }
 
 .icon-wrap { position: relative; display: inline-flex; }
 .icon-button { padding: 0; border: none; background: none; border-radius: 4px; }
