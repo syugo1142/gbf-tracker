@@ -40,7 +40,7 @@ npm ci            # 開発用の道具（Vite、TypeScript など）を入れる
 npm run dev       # 開発用サーバーを起動する（http://localhost:5173/）
 npm run build     # 公開用のファイルを dist/ に作る
 npm run preview   # ビルドしたものを手元で確かめる
-npm start         # 同期サーバーを起動する（作成中。http://localhost:3000/api/hello）
+npm start         # 同期サーバーを起動する（作成中。http://localhost:3000）
 npm run typecheck # 型の間違いがないか確かめる
 ```
 main に push すると、GitHub Actions がビルドして GitHub Pages に公開します。
