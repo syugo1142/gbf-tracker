@@ -359,7 +359,7 @@ export const Tracker = (() => {
           el('span', { class: 'mat-short-label', text: '不足' }),
           el('span', { class: 'mat-short-num', text: formatNum(short) }),
         ])
-      : el('div', { class: 'mat-done', text: need > 0 ? '✓ そろった' : '使う目標なし' });
+      : el('div', { class: 'mat-done', text: need > 0 ? '✓ OK' : '使う目標なし' });
     const sub = [`必要 ${formatNum(need)}`];
     if (short > 0 && m.perRun > 0) sub.push(runsText(m, short));
     return el('div', { class: `mat-tile ${statusClass(need, short)}` }, [
@@ -557,7 +557,8 @@ export const Tracker = (() => {
   function targetCard(t: Target, active: Target[]): HTMLDetailsElement {
     const { ratio, readyCount } = progressOf(t);
     const ready = readyCount === t.reqs.length;
-    const status = t.done ? '完了' : ready ? '素材そろった！' : `${readyCount}/${t.reqs.length}種そろった`;
+    // 「完了」は完了ボタンを押した目標にだけ使う。素材が足りただけの目標は「OK」にして区別する
+    const status = t.done ? '完了' : ready ? 'OK' : `${readyCount}/${t.reqs.length}種OK`;
 
     const summary = el('summary', {}, [
       el('div', { class: 'target-head' }, [
