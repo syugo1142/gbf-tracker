@@ -14,8 +14,7 @@
     {
       "binding": "DB",
       "database_name": "gbf-tracker-sync",
-      // 本物の D1 を作ったら（npx wrangler d1 create）、出てきた ID に書き換える。手元で動かすだけならこのままでよい
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "6ffa27a8-1437-4abd-a48e-27c42e93a170",
       // テーブルを作る SQL を置くフォルダ
       "migrations_dir": "server/migrations"
     }
