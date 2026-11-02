@@ -42,10 +42,15 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - 必要数の出典は [GameWith](https://xn--bck3aza1a2if6kra4ee0hf.gamewith.jp/) の各記事です（各プリセットの「出典」リンク）
 - アップデートで必要数が変わることがあります。実際の数はゲーム内で確認してください
 
+## 使用技術
+- 画面: TypeScript、[Vite](https://vite.dev/)（GitHub Pages で公開）
+- 同期サーバー: [Hono](https://hono.dev/)、[Cloudflare Workers](https://developers.cloudflare.com/workers/)、[Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
+- 公開: GitHub Actions（画面）、Wrangler（同期サーバー）
+
 ## 開発
-画面は [Vite](https://vite.dev/) でビルドしています。Node.js 24 以降が必要です。
+Node.js 24 以降が必要です。
 ```
-npm ci            # 開発用の道具（Vite、TypeScript など）を入れる
+npm ci            # 必要な部品（Vite、TypeScript、Hono、Wrangler など）を入れる
 npm run dev       # 開発用サーバーを起動する（http://localhost:5173/）
 npm run build     # 公開用のファイルを dist/ に作る
 npm run preview   # ビルドしたものを手元で確かめる
@@ -53,7 +58,7 @@ npm run db:migrate # 手元の同期サーバー用のデータベースに表�
 npm start         # 同期サーバーを手元で起動する（Cloudflare Workers を再現する。http://localhost:3000。npm run dev の画面の「同期」は、こちらにつながる）
 npm run typecheck # 型の間違いがないか確かめる
 ```
-main に push すると、GitHub Actions がビルドして GitHub Pages に公開します。
+main に push すると、GitHub Actions が画面をビルドして GitHub Pages に公開します。同期サーバーは `npx wrangler deploy` で Cloudflare Workers に公開します（push では公開されません）。
 
 ## 関連ツール
 - [グラブル天井計算](https://syugo1142.github.io/gbf-tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/gbf-tenjou-keisan)）: 宝晶石とチケットから、天井までの残りを計算する
