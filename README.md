@@ -44,9 +44,10 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - アップデートで必要数が変わることがあります。実際の数はゲーム内で確認してください
 
 ## 使用技術
-- 画面: TypeScript、[Vite](https://vite.dev/)（GitHub Pages で公開）
-- 同期サーバー: [Hono](https://hono.dev/)、[Cloudflare Workers](https://developers.cloudflare.com/workers/)、[Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
-- 公開: GitHub Actions（画面）、Wrangler（同期サーバー）
+- フロントエンド: TypeScript、[Vite](https://vite.dev/)
+- バックエンド: TypeScript、[Hono](https://hono.dev/)、[Cloudflare Workers](https://developers.cloudflare.com/workers/)
+- データベース: [Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
+- インフラ・CI/CD: GitHub Pages（画面の公開）、GitHub Actions（画面の型チェック・ビルド・公開）、Wrangler（同期サーバーの公開）
 
 ## 開発
 Node.js 24 以降が必要です。
