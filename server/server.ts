@@ -16,8 +16,8 @@ const MAX_CODES = 1000;
 
 // このサーバーを呼んでよいページの場所（オリジン = プロトコル + ホスト名 + ポート番号）
 // ブラウザは、別のオリジンのサーバーへの通信を、サーバーが許可したときだけ通す（CORS）
-// 今は画面の開発用サーバー（npm run dev）だけ。公開ページからつなぐときに、公開ページのオリジンを足す
-const ALLOWED_ORIGINS = ['http://localhost:5173'];
+// 公開ページ（GitHub Pages）と、画面の開発用サーバー（npm run dev）。オリジンにはパス（/gbf-tracker/）は含まない
+const ALLOWED_ORIGINS = ['https://syugo1142.github.io', 'http://localhost:5173'];
 
 // 同期コード: パソコンとスマホで同じデータを使うための合言葉
 // 知られると読み書きされてしまうので、推測できない長さ（英数字と - _ だけの 32〜64 文字）に限る
@@ -29,6 +29,17 @@ const app = new Hono<{ Bindings: Env }>();
 
 // 届いたリクエストをターミナルに表示する
 app.use(logger());
+
+// 暗号化されない http:// のリクエストは断る（同期コードとデータが、途中で盗み見られないようにするため）
+// https:// に転送（リダイレクト）はしない。転送しても、最初のリクエストで同期コードはもう流れてしまっているため
+// 手元（npm start）は http://localhost で動かすので、localhost と 127.0.0.1 だけは通す
+app.use(async (c, next) => {
+  const url = new URL(c.req.url);
+  if (url.protocol === 'http:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+    return c.json({ error: 'https required' }, 400);
+  }
+  await next();
+});
 
 // /api/ で始まるリクエストに、CORS の許可の返事を付ける
 // PUT や JSON を送るときは、ブラウザが先に OPTIONS で「送ってよいか」を聞いてくる（プリフライト）。それにもここで答える

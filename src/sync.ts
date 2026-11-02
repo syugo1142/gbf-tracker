@@ -5,9 +5,9 @@ import { app } from './app.ts';
 
 // 同期: 同期コードを合言葉にして、データを同期サーバー（server/server.ts）に送ったり取ってきたりする
 // 素材のアイコンは送らない（ゲームの画像をサーバーに預からないため。データも小さくなる）。アイコンは端末ごとに登録する
-// サーバーは今は手元でしか動かないので、開発用サーバー（npm run dev）で開いたときだけ表示する
+// つなぐ先は、公開用では Cloudflare Workers のサーバー、開発用サーバー（npm run dev）では手元のサーバー（npm start）
 // import.meta.env.DEV は Vite が入れる値で、npm run dev のときは true、npm run build で作った公開用では false になる
-const SERVER = import.meta.env.DEV ? 'http://localhost:3000' : '';
+const SERVER = import.meta.env.DEV ? 'http://localhost:3000' : 'https://gbf-tracker-sync.syugo1142.workers.dev';
 
 // 同期コードはデータとは別のキーに置く（バックアップの JSON に入れたり、ほかの端末に送ったりしないため）
 const CODE_KEY = 'gbf-tools-sync';
@@ -16,9 +16,9 @@ const CODE_PATTERN = /^[A-Za-z0-9_-]{32,64}$/;
 // サーバーが返事をしないときに、待つのをやめるまでの時間（ミリ秒）
 const TIMEOUT = 10000;
 
-const card = byId('sync', HTMLDetailsElement);
 const codeInput = byId('sync-code', HTMLInputElement);
 const newBtn = byId('sync-new', HTMLButtonElement);
+const copyBtn = byId('sync-copy', HTMLButtonElement);
 const pushBtn = byId('sync-push', HTMLButtonElement);
 const pullBtn = byId('sync-pull', HTMLButtonElement);
 const status = byId('sync-status', HTMLParagraphElement);
@@ -55,7 +55,7 @@ function currentCode(): string | null {
 
 // 通信している間はボタンを押せなくする（二重に送らないため）
 function setBusy(busy: boolean): void {
-  for (const btn of [newBtn, pushBtn, pullBtn]) btn.disabled = busy;
+  for (const btn of [newBtn, copyBtn, pushBtn, pullBtn]) btn.disabled = busy;
 }
 
 // サーバーにリクエストを送り、返事の番号（ステータスコード）と中身の JSON を返す
@@ -104,7 +104,9 @@ function formatTime(value: unknown): string {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('ja-JP');
 }
 
-const NETWORK_ERROR = 'サーバーにつながりませんでした。同期サーバー（npm start）が動いているか確かめてください';
+const NETWORK_ERROR = import.meta.env.DEV
+  ? 'サーバーにつながりませんでした。同期サーバー（npm start）が動いているか確かめてください'
+  : 'サーバーにつながりませんでした。インターネットにつながっているか確かめて、しばらくしてからもう一度お試しください';
 
 async function push(): Promise<void> {
   const code = currentCode();
@@ -163,24 +165,35 @@ async function pull(): Promise<void> {
   }
 }
 
-if (SERVER) {
-  card.hidden = false;
-  codeInput.value = loadCode();
+codeInput.value = loadCode();
 
-  newBtn.addEventListener('click', () => {
-    if (codeInput.value && !confirm('今の同期コードを捨てて、新しい同期コードを作りますか？')) return;
-    codeInput.value = newCode();
-    saveCode(codeInput.value);
-    status.textContent = '新しい同期コードを作りました。ほかの端末では、この同期コードを貼り付けてください';
-  });
+newBtn.addEventListener('click', () => {
+  if (codeInput.value && !confirm('今の同期コードを捨てて、新しい同期コードを作りますか？')) return;
+  codeInput.value = newCode();
+  saveCode(codeInput.value);
+  status.textContent = '新しい同期コードを作りました。「コピー」を押して、ほかの端末の同期コードの欄に貼り付けてください';
+});
 
-  // ほかの端末の同期コードを貼り付けたときに覚えておく。形が違うものは覚えない
-  codeInput.addEventListener('change', () => {
-    const code = codeInput.value.trim();
-    if (code === '' || CODE_PATTERN.test(code)) saveCode(code);
-    else currentCode();
-  });
+// 同期コードは 43 文字あって手で写すのは大変なので、コピーできるようにする
+// クリップボードは https のページ（と localhost）でしか使えず、ブラウザが断ることもあるので、失敗したら欄を選んだ状態にする
+copyBtn.addEventListener('click', async () => {
+  const code = currentCode();
+  if (!code) return;
+  try {
+    await navigator.clipboard.writeText(code);
+    status.textContent = '同期コードをコピーしました。人に見られる場所には貼らないでください';
+  } catch {
+    codeInput.select();
+    status.textContent = 'コピーできませんでした。同期コードの欄を選んだので、手でコピーしてください';
+  }
+});
 
-  pushBtn.addEventListener('click', push);
-  pullBtn.addEventListener('click', pull);
-}
+// ほかの端末の同期コードを貼り付けたときに覚えておく。形が違うものは覚えない
+codeInput.addEventListener('change', () => {
+  const code = codeInput.value.trim();
+  if (code === '' || CODE_PATTERN.test(code)) saveCode(code);
+  else currentCode();
+});
+
+pushBtn.addEventListener('click', push);
+pullBtn.addEventListener('click', pull);
