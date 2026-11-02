@@ -59,6 +59,23 @@
         <button id="reset-btn" class="danger">全データを削除</button>
       </div>
     </details>
+
+    <!-- 同期（作成中。開発用サーバーで開いたときだけ表示する） -->
+    <details class="card" id="sync" hidden>
+      <summary><h2>同期（作成中）</h2></summary>
+      <p class="hint">同じ同期コードを入れた端末どうしで、データを送ったり取ってきたりできます。同期コードを知っている人はデータを読み書きできるので、人に教えないでください。</p>
+      <div class="inline-form">
+        <label class="sync-code-label">同期コード
+          <input id="sync-code" type="text" autocomplete="off" spellcheck="false" minlength="32" maxlength="64" pattern="[A-Za-z0-9_\-]{32,64}">
+        </label>
+        <button type="button" id="sync-new">新しく作る</button>
+      </div>
+      <div class="row-buttons">
+        <button type="button" id="sync-push">サーバーに送る</button>
+        <button type="button" id="sync-pull">サーバーから取ってくる</button>
+      </div>
+      <p class="hint" id="sync-status" role="status"></p>
+    </details>
   </main>
 
   <footer class="app-footer">

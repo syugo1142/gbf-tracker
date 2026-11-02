@@ -4,11 +4,17 @@
 // Hono で書いている。Hono は Node.js でも Cloudflare Workers でも同じ書き方で動くので、あとで Workers に載せ換えやすい
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 
 const PORT = 3000;
 const MAX_BODY = 1024 * 1024; // 受け取るデータの上限（1MB）。アイコンの画像を含めても足りる大きさ
+
+// このサーバーを呼んでよいページの場所（オリジン = プロトコル + ホスト名 + ポート番号）
+// ブラウザは、別のオリジンのサーバーへの通信を、サーバーが許可したときだけ通す（CORS）
+// 今は画面の開発用サーバー（npm run dev）だけ。公開ページからつなぐときに、公開ページのオリジンを足す
+const ALLOWED_ORIGINS = ['http://localhost:5173'];
 
 // 同期コード: パソコンとスマホで同じデータを使うための合言葉
 // 知られると読み書きされてしまうので、推測できない長さ（英数字と - _ だけの 32〜64 文字）に限る
@@ -24,6 +30,17 @@ const app = new Hono();
 
 // 届いたリクエストをターミナルに表示する
 app.use(logger());
+
+// /api/ で始まるリクエストに、CORS の許可の返事を付ける
+// PUT や JSON を送るときは、ブラウザが先に OPTIONS で「送ってよいか」を聞いてくる（プリフライト）。それにもここで答える
+app.use(
+  '/api/*',
+  cors({
+    origin: ALLOWED_ORIGINS,
+    allowMethods: ['GET', 'PUT'],
+    allowHeaders: ['Content-Type'],
+  }),
+);
 
 app.get('/api/hello', (c) => c.json({ message: 'hello' }));
 

@@ -3,5 +3,6 @@ import './style.css';
 import { app } from './app.ts';
 import { Tracker } from './tracker.ts';
 import './backup.ts';
+import './sync.ts';
 
 Tracker.init(app);
