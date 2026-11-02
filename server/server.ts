@@ -7,7 +7,12 @@ import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
-const MAX_BODY = 1024 * 1024; // 受け取るデータの上限（1MB）。アイコンの画像を含めても足りる大きさ
+// 受け取るデータの上限（128KB）。画面は素材のアイコンを送らないので、目標が多くても足りる大きさ
+const MAX_BODY = 128 * 1024;
+
+// 保存する同期コードの数の上限。だれでも送れるので、でたらめなコードで送られ続けてもデータベースが満杯にならないようにする
+// 最大で 1,000 × 128KB ＝ 約 128MB（D1 の無料枠は 1 つのデータベースにつき 500MB）
+const MAX_CODES = 1000;
 
 // このサーバーを呼んでよいページの場所（オリジン = プロトコル + ホスト名 + ポート番号）
 // ブラウザは、別のオリジンのサーバーへの通信を、サーバーが許可したときだけ通す（CORS）
@@ -55,7 +60,7 @@ app.get('/api/sync/:code', async (c) => {
     .first<{ data: string; updated_at: string }>();
   if (!row) return c.json({ error: 'not found' }, 404);
   // data は保存するときに JSON か確かめた文字列なので、読み直さずにそのまま返事に入れる
-  // （1MB の JSON を読み直すと計算に時間がかかり、無料枠の上限 10 ミリ秒を超えるおそれがあるため）
+  // （大きな JSON を読み直すと計算に時間がかかり、無料枠の上限 10 ミリ秒を超えるおそれがあるため）
   return c.body(`{"data":${row.data},"updatedAt":${JSON.stringify(row.updated_at)}}`, 200, {
     'Content-Type': 'application/json; charset=UTF-8',
   });
@@ -78,6 +83,15 @@ app.put(
     if (typeof data !== 'object' || data === null || Array.isArray(data)) {
       return c.json({ error: 'invalid data' }, 400);
     }
+    const code = c.req.param('code');
+    // 新しい同期コードのときだけ、保存してある数を数え、上限に達していたら 503（今は受け付けられない）で断る
+    // 今あるコードの上書きは、上限に達していても受け付ける
+    // （同時に送られると上限を少し超えることがあるが、満杯を防ぐ目的には十分）
+    const exists = await c.env.DB.prepare('SELECT 1 FROM sync WHERE code = ?').bind(code).first();
+    if (!exists) {
+      const count = await c.env.DB.prepare('SELECT COUNT(*) AS n FROM sync').first<number>('n');
+      if ((count ?? 0) >= MAX_CODES) return c.json({ error: 'full' }, 503);
+    }
     const updatedAt = new Date().toISOString();
     // その同期コードの行がなければ足し（INSERT）、あれば中身を書き換える（ON CONFLICT ... DO UPDATE）
     // excluded は「足そうとした行」を指す
@@ -86,7 +100,7 @@ app.put(
         `INSERT INTO sync (code, data, updated_at) VALUES (?, ?, ?)
          ON CONFLICT (code) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
       )
-      .bind(c.req.param('code'), text, updatedAt)
+      .bind(code, text, updatedAt)
       .run();
     return c.json({ updatedAt });
   },

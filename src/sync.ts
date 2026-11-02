@@ -1,8 +1,10 @@
 import { byId } from './util.ts';
 import { AppStorage } from './storage.ts';
+import type { AppState } from './storage.ts';
 import { app } from './app.ts';
 
 // 同期: 同期コードを合言葉にして、データを同期サーバー（server/server.ts）に送ったり取ってきたりする
+// 素材のアイコンは送らない（ゲームの画像をサーバーに預からないため。データも小さくなる）。アイコンは端末ごとに登録する
 // サーバーは今は手元でしか動かないので、開発用サーバー（npm run dev）で開いたときだけ表示する
 // import.meta.env.DEV は Vite が入れる値で、npm run dev のときは true、npm run build で作った公開用では false になる
 const SERVER = import.meta.env.DEV ? 'http://localhost:3000' : '';
@@ -69,6 +71,33 @@ async function request(method: 'GET' | 'PUT', code: string, body?: unknown): Pro
   return { status: res.status, json };
 }
 
+// 送るデータから、素材のアイコンを抜く
+function withoutIcons(state: AppState): AppState {
+  return { ...state, materials: state.materials.map(({ icon: _icon, ...m }) => m) };
+}
+
+// 取ってきたデータに、この端末のアイコンを付け直す。同じ素材は ID で探し、見つからなければ名前で探す
+// （同期する前にそれぞれの端末で登録した素材は、同じ素材でも ID が違うため）
+function withLocalIcons(next: AppState, current: AppState): AppState {
+  const iconById = new Map<string, string>();
+  const iconByName = new Map<string, string>();
+  for (const m of current.materials) {
+    if (!m.icon) continue;
+    iconById.set(m.id, m.icon);
+    iconByName.set(m.name, m.icon);
+  }
+  return {
+    ...next,
+    materials: next.materials.map((m) => {
+      // 中身の形までは確かめていないので、オブジェクトでないものはそのまま残す（normalize と同じ扱い）
+      if (typeof m !== 'object' || m === null) return m;
+      const { icon: _icon, ...rest } = m;
+      const icon = iconById.get(m.id) ?? iconByName.get(m.name);
+      return icon ? { ...rest, icon } : rest;
+    }),
+  };
+}
+
 // ISO 形式の日時（2026-11-02T03:04:05.000Z）を、日本の書き方（2026/11/2 12:04:05）にする
 function formatTime(value: unknown): string {
   const date = new Date(typeof value === 'string' ? value : NaN);
@@ -83,12 +112,14 @@ async function push(): Promise<void> {
   setBusy(true);
   status.textContent = '送っています…';
   try {
-    const res = await request('PUT', code, app.state);
+    const res = await request('PUT', code, withoutIcons(app.state));
     if (res.status === 200) {
       const time = formatTime((res.json as { updatedAt?: unknown } | null)?.updatedAt);
       status.textContent = `サーバーに送りました（${time}）`;
     } else if (res.status === 413) {
-      status.textContent = 'データが大きすぎて送れませんでした（1MB まで）。素材のアイコンを減らすと小さくなります';
+      status.textContent = 'データが大きすぎて送れませんでした（128KB まで）';
+    } else if (res.status === 503) {
+      status.textContent = 'サーバーに保存できる同期コードの数がいっぱいで、新しい同期コードでは送れませんでした';
     } else {
       status.textContent = `送れませんでした（エラー ${res.status}）`;
     }
@@ -121,8 +152,8 @@ async function pull(): Promise<void> {
       status.textContent = '取ってくるのをやめました';
       return;
     }
-    // JSON の読み込み（backup.ts）と同じく、形を整えてから保存し、画面を作り直す
-    app.state = AppStorage.normalize(saved.data);
+    // JSON の読み込み（backup.ts）と同じく、形を整えてから保存し、画面を作り直す。アイコンはこの端末のものを残す
+    app.state = withLocalIcons(AppStorage.normalize(saved.data), app.state);
     app.save();
     location.reload();
   } catch {
