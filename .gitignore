@@ -10,3 +10,5 @@
 node_modules/
 dist/
 CLAUDE.md
+.wrangler/
+worker-configuration.d.ts

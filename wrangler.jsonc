@@ -1,0 +1,23 @@
+// Cloudflare Workers の設定（同期サーバー）。wrangler（npm start・npx wrangler deploy など）が読む
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Workers の名前。公開すると https://<name>.<アカウントのサブドメイン>.workers.dev になる
+  "name": "gbf-tracker-sync",
+  // サーバーの入口
+  "main": "server/server.ts",
+  // どの時点の Workers の動きに合わせるか。日付を変えなければ、Cloudflare 側が変わっても動きは変わらない
+  "compatibility_date": "2026-10-23",
+  // 手元で動かすとき（npm start）の番号。画面（src/sync.ts）がつなぐ先と合わせる
+  "dev": { "port": 3000 },
+  // D1（データベース）をコードの中で c.env.DB として使えるようにする（バインディング）
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gbf-tracker-sync",
+      // 本物の D1 を作ったら（npx wrangler d1 create）、出てきた ID に書き換える。手元で動かすだけならこのままでよい
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      // テーブルを作る SQL を置くフォルダ
+      "migrations_dir": "server/migrations"
+    }
+  ]
+}

@@ -9,8 +9,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node server/server.ts",
-    "typecheck": "tsc && tsc -p src"
+    "start": "wrangler dev",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "typecheck": "wrangler types server/worker-configuration.d.ts && tsc && tsc -p src && tsc -p server"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
@@ -19,7 +20,6 @@
     "wrangler": "4.153.0"
   },
   "dependencies": {
-    "@hono/node-server": "2.1.5",
     "hono": "4.13.13"
   }
 }
