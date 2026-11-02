@@ -9,6 +9,9 @@
   "compatibility_date": "2026-10-23",
   // 手元で動かすとき（npm start）の番号。画面（src/sync.ts）がつなぐ先と合わせる
   "dev": { "port": 3000 },
+  // 決まった時間にサーバーを動かす（Cron Triggers）。時間は UTC で、18:00 は日本時間の朝 3 時
+  // そのときに server.ts の scheduled が動き、古い同期コードを消す
+  "triggers": { "crons": ["0 18 * * *"] },
   // D1（データベース）をコードの中で c.env.DB として使えるようにする（バインディング）
   "d1_databases": [
     {

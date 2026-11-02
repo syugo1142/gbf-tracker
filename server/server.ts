@@ -14,6 +14,10 @@ const MAX_BODY = 128 * 1024;
 // 最大で 1,000 × 128KB ＝ 約 128MB（D1 の無料枠は 1 つのデータベースにつき 500MB）
 const MAX_CODES = 1000;
 
+// この日数のあいだ送られてこなかった同期コードは、毎日の掃除（下の scheduled）で消す
+// 使わなくなったデータをサーバーに残さないため。消えると、MAX_CODES の枠も空く
+const KEEP_DAYS = 180;
+
 // このサーバーを呼んでよいページの場所（オリジン = プロトコル + ホスト名 + ポート番号）
 // ブラウザは、別のオリジンのサーバーへの通信を、サーバーが許可したときだけ通す（CORS）
 // 公開ページ（GitHub Pages）と、画面の開発用サーバー（npm run dev）。オリジンにはパス（/gbf-tracker/）は含まない
@@ -42,12 +46,12 @@ app.use(async (c, next) => {
 });
 
 // /api/ で始まるリクエストに、CORS の許可の返事を付ける
-// PUT や JSON を送るときは、ブラウザが先に OPTIONS で「送ってよいか」を聞いてくる（プリフライト）。それにもここで答える
+// PUT・DELETE や JSON を送るときは、ブラウザが先に OPTIONS で「送ってよいか」を聞いてくる（プリフライト）。それにもここで答える
 app.use(
   '/api/*',
   cors({
     origin: ALLOWED_ORIGINS,
-    allowMethods: ['GET', 'PUT'],
+    allowMethods: ['GET', 'PUT', 'DELETE'],
     allowHeaders: ['Content-Type'],
   }),
 );
@@ -117,6 +121,14 @@ app.put(
   },
 );
 
+// 保存してあるデータを消す（使う人が、自分のデータをサーバーに残したくないとき）
+app.delete('/api/sync/:code', async (c) => {
+  const result = await c.env.DB.prepare('DELETE FROM sync WHERE code = ?').bind(c.req.param('code')).run();
+  // meta.changes は、消した行の数。0 なら、その同期コードのデータはもともとなかった
+  if (result.meta.changes === 0) return c.json({ error: 'not found' }, 404);
+  return c.json({ deleted: true });
+});
+
 // メニューにないリクエストには 404 を返す
 app.notFound((c) => c.json({ error: 'not found' }, 404));
 
@@ -126,5 +138,16 @@ app.onError((err, c) => {
   return c.json({ error: 'server error' }, 500);
 });
 
-// Workers は、ここで渡した app にリクエストを届けてくれる。待つ番号（ポート）は Cloudflare が決める
-export default app;
+// Workers は、ここで渡したものを呼んでくれる。待つ番号（ポート）は Cloudflare が決める
+// fetch: リクエストが届いたとき（中身は Hono の app）
+// scheduled: wrangler.jsonc の triggers.crons に書いた時間になったとき（Cron Triggers）
+export default {
+  fetch: app.fetch,
+  async scheduled(controller, env) {
+    // scheduledTime は、動くはずだった時間（1970 年からのミリ秒）。そこから KEEP_DAYS 日前より古いものを消す
+    // updated_at は同じ形の ISO 形式（2026-11-02T03:04:05.000Z）なので、文字列のまま大きさを比べられる
+    const before = new Date(controller.scheduledTime - KEEP_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const result = await env.DB.prepare('DELETE FROM sync WHERE updated_at < ?').bind(before).run();
+    console.log(`${before} より前に送られた同期コードを ${result.meta.changes} 件消しました`);
+  },
+} satisfies ExportedHandler<Env>;

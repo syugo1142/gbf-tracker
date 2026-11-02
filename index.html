@@ -51,7 +51,7 @@
     <!-- バックアップ -->
     <details class="card" id="backup">
       <summary><h2>バックアップ</h2></summary>
-      <p>データはこのブラウザ内（localStorage）にだけ保存されています。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
+      <p>データはこのブラウザ内（localStorage）に保存されています。サーバーに送るのは、「同期」の「サーバーに送る」を押したときだけです。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
       <div class="row-buttons">
         <button id="export-btn">JSONを書き出す</button>
         <button type="button" id="import-btn">JSONを読み込む</button>
@@ -63,7 +63,7 @@
     <!-- 同期 -->
     <details class="card" id="sync">
       <summary><h2>同期</h2></summary>
-      <p class="hint">同じ同期コードを入れた端末どうしで、データをサーバーに送ったり、サーバーから取ってきたりできます。はじめに1台で「新しく作る」を押し、出てきた同期コードをほかの端末に貼り付けます。素材のアイコンは送らないので、端末ごとに登録してください。同期コードを知っている人はデータを読み書きできるので、人に教えないでください。</p>
+      <p class="hint">同じ同期コードを入れた端末どうしで、データをサーバーに送ったり、サーバーから取ってきたりできます。はじめに1台で「新しく作る」を押し、出てきた同期コードをほかの端末に貼り付けます。素材のアイコンは送らないので、端末ごとに登録してください。同期コードを知っている人はデータを読み書きできるので、人に教えないでください。サーバーのデータは、「サーバーから消す」で消せます。180日間送られなかったデータは、自動で消えます。</p>
       <div class="inline-form">
         <label class="sync-code-label">同期コード
           <input id="sync-code" type="text" autocomplete="off" spellcheck="false" minlength="32" maxlength="64" pattern="[A-Za-z0-9_\-]{32,64}">
@@ -74,6 +74,7 @@
       <div class="row-buttons">
         <button type="button" id="sync-push">サーバーに送る</button>
         <button type="button" id="sync-pull">サーバーから取ってくる</button>
+        <button type="button" id="sync-delete" class="danger">サーバーから消す</button>
       </div>
       <p class="hint" id="sync-status" role="status"></p>
     </details>

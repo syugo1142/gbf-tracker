@@ -21,6 +21,7 @@ const newBtn = byId('sync-new', HTMLButtonElement);
 const copyBtn = byId('sync-copy', HTMLButtonElement);
 const pushBtn = byId('sync-push', HTMLButtonElement);
 const pullBtn = byId('sync-pull', HTMLButtonElement);
+const deleteBtn = byId('sync-delete', HTMLButtonElement);
 const status = byId('sync-status', HTMLParagraphElement);
 
 // 推測されない同期コードを作る。でたらめな 32 バイトを、URL に使える文字（英数字と - _）の 43 文字にする
@@ -55,12 +56,12 @@ function currentCode(): string | null {
 
 // 通信している間はボタンを押せなくする（二重に送らないため）
 function setBusy(busy: boolean): void {
-  for (const btn of [newBtn, copyBtn, pushBtn, pullBtn]) btn.disabled = busy;
+  for (const btn of [newBtn, copyBtn, pushBtn, pullBtn, deleteBtn]) btn.disabled = busy;
 }
 
 // サーバーにリクエストを送り、返事の番号（ステータスコード）と中身の JSON を返す
 // サーバーにつながらないときは fetch がエラーを投げる
-async function request(method: 'GET' | 'PUT', code: string, body?: unknown): Promise<{ status: number; json: unknown }> {
+async function request(method: 'GET' | 'PUT' | 'DELETE', code: string, body?: unknown): Promise<{ status: number; json: unknown }> {
   const res = await fetch(`${SERVER}/api/sync/${code}`, {
     method,
     headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
@@ -140,7 +141,7 @@ async function pull(): Promise<void> {
   try {
     const res = await request('GET', code);
     if (res.status === 404) {
-      status.textContent = 'この同期コードのデータは、まだサーバーにありません。先にほかの端末から送ってください';
+      status.textContent = 'この同期コードのデータは、サーバーにありません。先にほかの端末から送ってください（180日間送られなかったデータは消えます）';
       return;
     }
     // 返事の中身は { data, updatedAt } の形のはず。違っていたら読み込まない
@@ -158,6 +159,29 @@ async function pull(): Promise<void> {
     app.state = withLocalIcons(AppStorage.normalize(saved.data), app.state);
     app.save();
     location.reload();
+  } catch {
+    status.textContent = NETWORK_ERROR;
+  } finally {
+    setBusy(false);
+  }
+}
+
+// サーバーにあるこの同期コードのデータを消す。この端末のデータと同期コードは残す（もう一度送れば、また同期できる）
+async function remove(): Promise<void> {
+  const code = currentCode();
+  if (!code) return;
+  if (!confirm('サーバーにあるこの同期コードのデータを消しますか？\nこの端末のデータは消えません。ほかの端末からは取ってこられなくなります。')) return;
+  setBusy(true);
+  status.textContent = '消しています…';
+  try {
+    const res = await request('DELETE', code);
+    if (res.status === 200) {
+      status.textContent = 'サーバーのデータを消しました。この端末のデータは残っています';
+    } else if (res.status === 404) {
+      status.textContent = 'この同期コードのデータは、サーバーにありません（消してあるか、180日間送られなかったため消えています）';
+    } else {
+      status.textContent = `消せませんでした（エラー ${res.status}）`;
+    }
   } catch {
     status.textContent = NETWORK_ERROR;
   } finally {
@@ -197,3 +221,4 @@ codeInput.addEventListener('change', () => {
 
 pushBtn.addEventListener('click', push);
 pullBtn.addEventListener('click', pull);
+deleteBtn.addEventListener('click', remove);
