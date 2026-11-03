@@ -19,8 +19,10 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 ### 同期
 1. 1台目で「同期」を開き、「新しく作る」を押して同期コードを作り、「サーバーに送る」を押します
 2. 「コピー」で同期コードをコピーし、2台目の「同期」の欄に貼り付けて、「サーバーから取ってくる」を押します
+3. そのあとは、データを書き換えた端末で「サーバーに送る」を押し、もう1台で「サーバーから取ってくる」を押します
 
 - データは、ボタンを押したときだけ同期サーバー（Cloudflare Workers）に送ります。自動では送りません
+- 送るとサーバーのデータが、取ってくると端末のデータが上書きされます。もう1台で書き換えたあとは、送る前に先に取ってきてください
 - 素材のアイコンは送りません。端末ごとに登録してください
 - 同期コードを知っている人は、データを読み書きできます。人に教えないでください
 - サーバーのデータは「サーバーから消す」で消せます（端末のデータは残ります）。180日間送られなかったデータは、自動で消えます
@@ -52,15 +54,15 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 ## 開発
 Node.js 24 以降が必要です。
 ```
-npm ci            # 必要な部品（Vite、TypeScript、Hono、Wrangler など）を入れる
-npm run dev       # 開発用サーバーを起動する（http://localhost:5173/）
-npm run build     # デプロイするファイルを dist/ に作る
-npm run preview   # ビルドしたものを手元で確かめる
+npm ci             # 必要な部品（Vite、TypeScript、Hono、Wrangler など）を入れる
+npm run dev        # 画面の開発用サーバーを起動する（http://localhost:5173/）
+npm run build      # デプロイするファイルを dist/ に作る
+npm run preview    # ビルドしたものを手元で確かめる
 npm run db:migrate # 手元の同期サーバー用のデータベースに表を作る（初めてのときと、表を変えたとき）
-npm start         # 同期サーバーを手元で起動する（Cloudflare Workers を再現する。http://localhost:3000。npm run dev の画面の「同期」は、こちらにつながる）
-npm run typecheck # 型の間違いがないか確かめる
+npm start          # 同期サーバーを手元で起動する（http://localhost:3000。npm run dev の画面の「同期」はここにつながる）
+npm run typecheck  # 型の間違いがないか確かめる
 ```
-main に push すると、GitHub Actions が画面をビルドして GitHub Pages にデプロイします。同期サーバーは `npx wrangler deploy` で Cloudflare Workers にデプロイします（push ではデプロイされません）。
+main に push すると、GitHub Actions が画面をビルドして GitHub Pages にデプロイします。同期サーバーは push ではデプロイされないので、`npx wrangler deploy` で Cloudflare Workers にデプロイします。
 
 ## 関連ツール
 - [グラブル天井計算](https://syugo1142.github.io/gbf-tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/gbf-tenjou-keisan)）: 宝晶石とチケットから、天井までの残りを計算する
