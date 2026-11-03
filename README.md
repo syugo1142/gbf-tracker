@@ -47,9 +47,9 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 
 ## 使用技術
 - フロントエンド: TypeScript、[Vite](https://vite.dev/)
-- バックエンド: TypeScript、[Hono](https://hono.dev/)、[Cloudflare Workers](https://developers.cloudflare.com/workers/)
+- バックエンド: TypeScript、[Hono](https://hono.dev/)
 - データベース: [Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
-- インフラ・CI/CD: GitHub Pages（画面のホスティング）、GitHub Actions（画面の型チェック・ビルド・デプロイ）、Wrangler（同期サーバーのデプロイ）
+- インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（画面の型チェック・ビルド・デプロイ）、Wrangler（同期サーバーのデプロイ）
 
 ## 開発
 Node.js 24 以降が必要です。
