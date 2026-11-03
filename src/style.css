@@ -131,6 +131,9 @@ details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 /* 同期コードは 43 文字あるので、入力欄を横いっぱいに広げる */
 .sync-code-label { display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px; min-width: 0; color: var(--muted); }
 .sync-code-label input { width: 100%; font-family: Consolas, monospace; }
+/* 同期の手順と注意。番号や点の分だけ左を空ける */
+.sync-list { margin: 0 0 12px; padding-left: 1.5em; }
+.sync-list li { margin: 4px 0; }
 
 /* ---------- 表 ---------- */
 .table-wrap { overflow-x: auto; }
