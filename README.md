@@ -50,6 +50,23 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - データベース: [Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
 - インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（画面の型チェック・ビルド・デプロイ）、Wrangler（同期サーバーのデプロイ）
 
+## 構成
+```mermaid
+flowchart LR
+  dev["開発者"]
+  pages["GitHub Pages<br>画面"]
+  browser["ブラウザ<br>（パソコン・スマホ）<br>データは localStorage"]
+  worker["Cloudflare Workers<br>同期サーバー（Hono）"]
+  d1[("Cloudflare D1<br>同期のデータ")]
+
+  dev -.->|"git push<br>GitHub Actions で<br>型チェック・ビルド"| pages
+  dev -.->|"npx wrangler deploy"| worker
+  pages -->|"画面を読み込む"| browser
+  browser -->|"同期のボタンを<br>押したときだけ<br>HTTPS"| worker
+  worker -->|"SQL"| d1
+```
+画面はブラウザの中だけで動きます。同期サーバーを使うのは、同期のボタンを押したときだけです。
+
 ## 開発
 Node.js 24 以降が必要です。
 ```
