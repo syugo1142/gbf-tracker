@@ -57,17 +57,20 @@ flowchart TB
   actions["GitHub Actions<br>型チェック・テスト"]
   pages["GitHub Pages<br>画面"]
   browser["ブラウザ<br>パソコン・スマホ<br>データは localStorage"]
-  worker["Cloudflare Workers<br>同期サーバー（Hono）"]
+  worker["Cloudflare Workers<br>同期サーバー"]
   d1[("Cloudflare D1<br>同期のデータ")]
 
   dev -.->|"git push"| actions
-  actions -.->|"ビルドして<br>デプロイ"| pages
-  actions -.->|"サーバーを<br>変えたときだけ<br>デプロイ"| worker
-  pages -->|"画面を読み込む"| browser
-  browser -->|"同期のボタンを<br>押したときだけ<br>HTTPS"| worker
+  actions -.->|"デプロイ"| pages
+  actions -.->|"デプロイ"| worker
+  pages -->|"読み込む"| browser
+  browser -->|"HTTPS"| worker
   worker -->|"SQL"| d1
 ```
-画面はブラウザの中だけで動きます。同期サーバーを使うのは、同期のボタンを押したときだけです。
+点線はデプロイの流れ、実線は使うときの通信です。
+
+- push すると、GitHub Actions が型チェックとテストを行ってからデプロイします。画面は毎回、同期サーバーは `server/` などを変えたときだけデプロイします
+- 画面はブラウザの中だけで動きます。同期サーバーを使うのは、同期のボタンを押したときだけです
 
 ## 開発
 Node.js 24 以降が必要です。
