@@ -52,10 +52,10 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 
 ## 構成
 ```mermaid
-flowchart LR
+flowchart TB
   dev["開発者"]
   pages["GitHub Pages<br>画面"]
-  browser["ブラウザ<br>（パソコン・スマホ）<br>データは localStorage"]
+  browser["ブラウザ<br>パソコン・スマホ<br>データは localStorage"]
   worker["Cloudflare Workers<br>同期サーバー（Hono）"]
   d1[("Cloudflare D1<br>同期のデータ")]
 
