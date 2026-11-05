@@ -48,19 +48,21 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - フロントエンド: TypeScript、[Vite](https://vite.dev/)
 - バックエンド: TypeScript、[Hono](https://hono.dev/)、node:test（API のテスト）
 - データベース: [Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
-- インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（型チェック・同期サーバーのテスト、画面のビルド・デプロイ）、Wrangler（同期サーバーのテスト・デプロイ）
+- インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（型チェック・テスト、画面と同期サーバーのデプロイ）、Wrangler（同期サーバーのテスト・デプロイ）
 
 ## 構成
 ```mermaid
 flowchart TB
   dev["開発者"]
+  actions["GitHub Actions<br>型チェック・テスト"]
   pages["GitHub Pages<br>画面"]
   browser["ブラウザ<br>パソコン・スマホ<br>データは localStorage"]
   worker["Cloudflare Workers<br>同期サーバー（Hono）"]
   d1[("Cloudflare D1<br>同期のデータ")]
 
-  dev -.->|"git push<br>GitHub Actions で<br>型チェック・ビルド"| pages
-  dev -.->|"npm run deploy<br>型チェック・テストの<br>あとにデプロイ"| worker
+  dev -.->|"git push"| actions
+  actions -.->|"ビルドして<br>デプロイ"| pages
+  actions -.->|"サーバーを<br>変えたときだけ<br>デプロイ"| worker
   pages -->|"画面を読み込む"| browser
   browser -->|"同期のボタンを<br>押したときだけ<br>HTTPS"| worker
   worker -->|"SQL"| d1
@@ -77,9 +79,11 @@ npm run db:migrate # 手元の同期サーバー用のデータベースに表�
 npm start          # 同期サーバーを手元で起動する（http://localhost:3000。npm run dev の画面の「同期」はここにつながる）
 npm run typecheck  # 型の間違いがないか確かめる
 npm test           # 同期サーバーの API を自動でテストする（test/server.test.ts）
-npm run deploy     # 型チェックとテストに通ったら、同期サーバーを Cloudflare Workers にデプロイする
+npm run deploy     # 型チェックとテストに通ったら、同期サーバーを手元から Cloudflare Workers にデプロイする（ふだんは push で自動）
 ```
-main に push すると、GitHub Actions が型チェックとテストを行い、画面をビルドして GitHub Pages にデプロイします。同期サーバーは push ではデプロイされないので、`npm run deploy` でデプロイします。
+main に push すると、GitHub Actions が型チェックとテストを行い、画面をビルドして GitHub Pages にデプロイします。同期サーバーに関係するファイル（`server/`、`wrangler.jsonc`、`package.json` など）が変わったときは、同期サーバーも Cloudflare Workers にデプロイします。
+
+データベースの表を変えたとき（`server/migrations/` に SQL を足したとき）は、push の前に `npx wrangler d1 migrations apply DB --remote` で本物のデータベースに当てます。
 
 テストは、同期サーバーを Workers と同じ仕組み（workerd）で動かし、テスト用のデータベースを使います。開発用のデータベースには触りません。
 

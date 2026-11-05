@@ -2,7 +2,8 @@
 // 手元: npm start（中身は wrangler dev）→ http://localhost:3000 。保存先は手元用の D1（.wrangler フォルダの中）
 // 初めて動かす前と、server/migrations に SQL を足したあとは、npm run db:migrate で手元の D1 に表を作る
 // 設定は wrangler.jsonc。型の間違い探しは npm run typecheck、API のテストは npm test（test/server.test.ts）で行う
-// 公開は npm run deploy（型チェックとテストに通ったときだけ、Cloudflare Workers にデプロイする）
+// main に push すると、GitHub Actions（.github/workflows/deploy-server.yml）が型チェックとテストのあとに Cloudflare Workers にデプロイする
+// 手元からは npm run deploy で同じことができる
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
