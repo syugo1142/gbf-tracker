@@ -2,12 +2,20 @@ import { el, byId } from './util.ts';
 import { AppStorage } from './storage.ts';
 import { app } from './app.ts';
 
+// 今日の日付を 2026-11-06 の形にする
+// toISOString() は UTC（日本時間より9時間遅い）の日付になり、朝0時〜9時に書き出すと前の日になるので、この端末の時刻で作る
+function today(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 // バックアップ
 byId('export-btn', HTMLButtonElement).addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(app.state, null, 2)], { type: 'application/json' });
   const a = el('a', {
     href: URL.createObjectURL(blob),
-    download: `gbf-tools-${new Date().toISOString().slice(0, 10)}.json`,
+    download: `gbf-tracker-${today()}.json`,
   });
   a.click();
   URL.revokeObjectURL(a.href);
