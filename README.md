@@ -73,7 +73,6 @@ Node.js 24 以降が必要です。
 npm ci             # 必要な部品（Vite、TypeScript、Hono、Wrangler など）を入れる
 npm run dev        # 画面の開発用サーバーを起動する（http://localhost:5173/）
 npm run build      # デプロイするファイルを dist/ に作る
-npm run preview    # ビルドしたものを手元で確かめる
 npm run db:migrate # 手元の同期サーバー用のデータベースに表を作る（初めてのときと、表を変えたとき）
 npm start          # 同期サーバーを手元で起動する（http://localhost:3000。npm run dev の画面の「同期」はここにつながる）
 npm run typecheck  # 型の間違いがないか確かめる
