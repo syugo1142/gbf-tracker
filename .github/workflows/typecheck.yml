@@ -1,5 +1,5 @@
-# push とプルリクエストのたびに、サーバーの型チェックを自動で実行する
-name: 型チェック
+# push とプルリクエストのたびに、画面とサーバーの型チェックと、同期サーバーのテストを自動で実行する
+name: 型チェックとテスト
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  typecheck:
+  check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -27,3 +27,5 @@ jobs:
 
       - run: npm ci
       - run: npm run typecheck
+      # 同期サーバーを Workers と同じ仕組み（workerd）で動かし、API が決めたとおりに答えるか確かめる
+      - run: npm test

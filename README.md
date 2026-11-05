@@ -46,9 +46,9 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 
 ## 使用技術
 - フロントエンド: TypeScript、[Vite](https://vite.dev/)
-- バックエンド: TypeScript、[Hono](https://hono.dev/)
+- バックエンド: TypeScript、[Hono](https://hono.dev/)、node:test（API のテスト）
 - データベース: [Cloudflare D1](https://developers.cloudflare.com/d1/)（SQLite）
-- インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（画面の型チェック・ビルド・デプロイ）、Wrangler（同期サーバーのデプロイ）
+- インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（型チェック・同期サーバーのテスト、画面のビルド・デプロイ）、Wrangler（同期サーバーのテスト・デプロイ）
 
 ## 構成
 ```mermaid
@@ -60,7 +60,7 @@ flowchart TB
   d1[("Cloudflare D1<br>同期のデータ")]
 
   dev -.->|"git push<br>GitHub Actions で<br>型チェック・ビルド"| pages
-  dev -.->|"npx wrangler deploy"| worker
+  dev -.->|"npm run deploy<br>型チェック・テストの<br>あとにデプロイ"| worker
   pages -->|"画面を読み込む"| browser
   browser -->|"同期のボタンを<br>押したときだけ<br>HTTPS"| worker
   worker -->|"SQL"| d1
@@ -76,8 +76,12 @@ npm run build      # デプロイするファイルを dist/ に作る
 npm run db:migrate # 手元の同期サーバー用のデータベースに表を作る（初めてのときと、表を変えたとき）
 npm start          # 同期サーバーを手元で起動する（http://localhost:3000。npm run dev の画面の「同期」はここにつながる）
 npm run typecheck  # 型の間違いがないか確かめる
+npm test           # 同期サーバーの API を自動でテストする（test/server.test.ts）
+npm run deploy     # 型チェックとテストに通ったら、同期サーバーを Cloudflare Workers にデプロイする
 ```
-main に push すると、GitHub Actions が画面をビルドして GitHub Pages にデプロイします。同期サーバーは push ではデプロイされないので、`npx wrangler deploy` で Cloudflare Workers にデプロイします。
+main に push すると、GitHub Actions が型チェックとテストを行い、画面をビルドして GitHub Pages にデプロイします。同期サーバーは push ではデプロイされないので、`npm run deploy` でデプロイします。
+
+テストは、同期サーバーを Workers と同じ仕組み（workerd）で動かし、テスト用のデータベースを使います。開発用のデータベースには触りません。
 
 ## 関連ツール
 - [グラブル天井計算](https://syugo1142.github.io/gbf-tenjou-keisan/)（[リポジトリ](https://github.com/syugo1142/gbf-tenjou-keisan)）: 宝晶石とチケットから、天井までの残りを計算する

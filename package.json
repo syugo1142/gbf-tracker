@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "start": "wrangler dev",
     "db:migrate": "wrangler d1 migrations apply DB --local",
-    "typecheck": "wrangler types server/worker-configuration.d.ts && tsc && tsc -p src && tsc -p server"
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "wrangler types server/worker-configuration.d.ts && tsc && tsc -p src && tsc -p server && tsc -p test",
+    "deploy": "npm run typecheck && npm test && wrangler deploy"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
