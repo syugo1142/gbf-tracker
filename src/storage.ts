@@ -1,4 +1,4 @@
-// localStorage への保存・読み込み
+// 保存データの形（型）と、localStorage への保存・読み込み
 
 // 保存データの形。ほかのファイルからも import して使う
 export interface Material {
@@ -29,59 +29,66 @@ export interface AppState {
   targets: Target[];
 }
 
-export const AppStorage = (() => {
-  const KEY = 'gbf-tools-v1';
+// localStorage のキー。変えると、使っている人のデータが読めなくなるので変えない
+const KEY = 'gbf-tools-v1';
+// 天井計算（gbf-tenjou-keisan）が使うキー
+const SPARK_KEY = 'gbf-spark-v1';
 
-  function defaults(): AppState {
-    return {
-      materials: [],
-      targets: [],
-    };
+// 何も保存されていないときの状態
+export function defaultState(): AppState {
+  return {
+    materials: [],
+    targets: [],
+  };
+}
+
+// 読み込んだデータの欠けている項目を、空の配列で埋める
+// data は JSON.parse の結果なので、どんな形か分からない（unknown）。配列かどうかだけ確かめる
+// （配列の中身の形までは確かめていない）
+export function normalizeState(data: unknown): AppState {
+  if (typeof data !== 'object' || data === null) return defaultState();
+  const { materials, targets } = data as { materials?: unknown; targets?: unknown };
+  return {
+    materials: Array.isArray(materials) ? materials : [],
+    targets: Array.isArray(targets) ? targets : [],
+  };
+}
+
+// localStorage から読み込む。読めなかったときは空の状態にする
+export function loadState(): AppState {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return defaultState();
+    const data: unknown = JSON.parse(raw);
+    moveSparkData(data);
+    return normalizeState(data);
+  } catch (e) {
+    console.warn('読み込みに失敗しました', e);
+    return defaultState();
   }
+}
 
-  // 読み込んだデータの欠けている項目を既定値で埋める
-  // data は JSON.parse の結果なので、どんな形か分からない（unknown）。配列かどうかだけ確かめる
-  // （配列の中身の形までは確かめていない）
-  function normalize(data: unknown): AppState {
-    const d = defaults();
-    const obj = (typeof data === 'object' && data !== null ? data : {}) as Partial<Record<keyof AppState, unknown>>;
-    return {
-      materials: Array.isArray(obj.materials) ? (obj.materials as Material[]) : d.materials,
-      targets: Array.isArray(obj.targets) ? (obj.targets as Target[]) : d.targets,
-    };
+// localStorage に保存する。容量が足りないなどで保存できなかったら false
+export function saveState(state: AppState): boolean {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+    return true;
+  } catch (e) {
+    console.warn('保存に失敗しました', e);
+    return false;
   }
+}
 
-  function load(): AppState {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return defaults();
-      const data: unknown = JSON.parse(raw);
-      moveSparkData(data);
-      return normalize(data);
-    } catch (e) {
-      console.warn('読み込みに失敗しました', e);
-      return defaults();
+// 以前は天井計算の手持ちも同じキーに入れていた。天井計算は別のツール（gbf-tenjou-keisan）になったので、
+// そちらのキーがまだ空なら移しておく（このキーからは次の保存で消える）
+function moveSparkData(data: unknown): void {
+  if (typeof data !== 'object' || data === null || !('spark' in data) || !data.spark) return;
+  try {
+    // 天井計算のほうで入力し直したデータを上書きしないように、空のときだけ移す
+    if (localStorage.getItem(SPARK_KEY) === null) {
+      localStorage.setItem(SPARK_KEY, JSON.stringify(data.spark));
     }
+  } catch {
+    // 移せなくても、素材管理は使えるので何もしない
   }
-
-  // 以前は天井計算の手持ちも同じキーに入れていた。天井計算は別のツール（tenjou-keisan）になったので、
-  // そちらのキーがまだ空なら移しておく（このキーからは次の保存で消える）
-  function moveSparkData(data: unknown): void {
-    if (typeof data !== 'object' || data === null || !('spark' in data) || !data.spark) return;
-    try {
-      if (localStorage.getItem('gbf-spark-v1') === null) localStorage.setItem('gbf-spark-v1', JSON.stringify(data.spark));
-    } catch {}
-  }
-
-  function save(state: AppState): boolean {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(state));
-      return true;
-    } catch (e) {
-      console.warn('保存に失敗しました', e);
-      return false;
-    }
-  }
-
-  return { load, save, defaults, normalize };
-})();
+}

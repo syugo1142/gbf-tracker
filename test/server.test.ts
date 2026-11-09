@@ -77,7 +77,8 @@ describe('保存と取り出し', () => {
     await put(code, '{"n":1}');
     await put(code, '{"n":2}');
 
-    const got = (await (await sync(code)).json()) as { data: unknown };
+    const res = await sync(code);
+    const got = (await res.json()) as { data: unknown };
     assert.deepEqual(got.data, { n: 2 });
   });
 
@@ -91,7 +92,8 @@ describe('保存と取り出し', () => {
     const data = { memo: "'); DROP TABLE sync; --" };
     await put(code, JSON.stringify(data));
 
-    const got = (await (await sync(code)).json()) as { data: unknown };
+    const res = await sync(code);
+    const got = (await res.json()) as { data: unknown };
     assert.deepEqual(got.data, data);
     // 表が消えていないことを確かめる
     const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM sync').first<number>('n');
@@ -170,7 +172,7 @@ describe('保存する数の上限（1,000 件）', () => {
 
   test('1,000 件あっても、今ある同期コードの上書きは受け付ける', async () => {
     const [code] = await fill(1000);
-    const res = await put(code!, '{"n":1}');
+    const res = await put(code, '{"n":1}');
     assert.equal(res.status, 200);
   });
 

@@ -1,10 +1,12 @@
-// DOM 生成ヘルパー。文字列は textContent で入れるので XSS の心配がない
+// 画面の部品（DOM の要素）を作る・取り出すための関数と、数を扱う小さな関数
 
 // el() の props に渡せるもの。class・text・on〇〇（イベント）と、要素のプロパティや属性
 export type Props = Record<string, unknown>;
 // el() の children に渡せるもの。null や undefined は飛ばす
 export type Child = Node | string | number | null | undefined;
 
+// 要素を作る。例: el('button', { class: 'icon', text: '×', onclick: () => row.remove() })
+// 文字は textContent で入れるので、HTML として読まれない（XSS の心配がない）
 // tag に 'button' を渡すと HTMLButtonElement が返る、のように、タグ名から戻り値の型が決まる
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -13,17 +15,38 @@ export function el<K extends keyof HTMLElementTagNameMap>(
 ): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(props)) {
-    if (key === 'class') node.className = String(value);
-    else if (key === 'text') node.textContent = value == null ? '' : String(value);
-    else if (key.startsWith('on')) node.addEventListener(key.slice(2), value as EventListener);
-    // プロパティとして入れる。input の list のように読み取り専用のものは Reflect.set が false を返すので、属性で入れる
-    else if (!(key in node) || !Reflect.set(node, key, value)) node.setAttribute(key, String(value));
+    setProp(node, key, value);
   }
-  for (const child of Array.isArray(children) ? children : [children]) {
+  const list = Array.isArray(children) ? children : [children];
+  for (const child of list) {
     if (child == null) continue;
-    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+    // 文字や数は、文字の部品（テキストノード）として入る
+    node.append(child instanceof Node ? child : String(child));
   }
   return node;
+}
+
+// props の1つを要素に入れる
+function setProp(node: HTMLElement, key: string, value: unknown): void {
+  if (key === 'class') {
+    node.className = String(value);
+  } else if (key === 'text') {
+    node.textContent = value == null ? '' : String(value);
+  } else if (key.startsWith('on')) {
+    // onclick なら click のイベントとして登録する
+    node.addEventListener(key.slice(2), value as EventListener);
+  } else if (!setProperty(node, key, value)) {
+    // aria-label のようにプロパティにないものは、属性として入れる
+    node.setAttribute(key, String(value));
+  }
+}
+
+// 要素のプロパティ（value・disabled・open など）として入れる。入れられたら true
+// プロパティがないときや、input の list のように読み取り専用で入れられないときは false
+// （node[key] = value と書くと、読み取り専用のときにエラーになる。Reflect.set は、エラーにせず false を返す）
+function setProperty(node: HTMLElement, key: string, value: unknown): boolean {
+  if (!(key in node)) return false;
+  return Reflect.set(node, key, value);
 }
 
 // index.html にある要素を id で取り出す。type には欲しい要素の種類（HTMLButtonElement など）を渡す
@@ -41,16 +64,18 @@ export function formField<T extends HTMLElement>(form: HTMLFormElement, name: st
   return node;
 }
 
+// 素材や目標の ID を作る。今の時刻と乱数を、英数字の短い文字列にしてつなぐ
 export function uid(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-// 数値入力を 0 以上の数に丸める
+// 入力された値を、0 以上の数にする（数でないものや、マイナスは 0）
 export function toNum(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
+// 数を 3 桁ごとのカンマ付きにする（1234567 → 1,234,567）
 export function formatNum(n: number): string {
   return n.toLocaleString('ja-JP');
 }

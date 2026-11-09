@@ -26,12 +26,12 @@
         <summary>自分で素材を指定して登録</summary>
         <p class="hint">素材名を入力すると候補が出ます。まだ登録していない素材は、所持数0で「全素材の合計」に追加されます。</p>
         <form id="target-form">
-        <div id="req-rows"></div>
-        <datalist id="material-names"></datalist>
-        <div class="row-buttons">
-          <button type="button" id="add-req-row">＋ 素材を追加</button>
-          <button type="submit">目標を登録</button>
-        </div>
+          <div id="req-rows"></div>
+          <datalist id="material-names"></datalist>
+          <div class="row-buttons">
+            <button type="button" id="add-req-row">＋ 素材を追加</button>
+            <button type="submit">目標を登録</button>
+          </div>
         </form>
       </details>
       <div class="list-tools">
@@ -42,7 +42,7 @@
       <div id="target-list"></div>
     </div>
 
-    <details class="card" id="all-materials" data-key="all-materials">
+    <details class="card" id="all-materials">
       <summary><h2>全素材の合計</h2></summary>
       <p class="hint">未完了の目標で使う素材の合計です。「1周平均」を入れると、不足分を集める周回数の目安が出ます。</p>
       <div id="material-grid" class="mat-grid"></div>
@@ -53,10 +53,10 @@
       <summary><h2>バックアップ</h2></summary>
       <p>データはこのブラウザ内（localStorage）に保存されています。サーバーに送るのは、「同期」の「サーバーに送る」を押したときだけです。ブラウザのデータを消すと消えるので、定期的に書き出しておいてください。</p>
       <div class="row-buttons">
-        <button id="export-btn">JSONを書き出す</button>
+        <button type="button" id="export-btn">JSONを書き出す</button>
         <button type="button" id="import-btn">JSONを読み込む</button>
         <input type="file" id="import-file" accept="application/json" hidden>
-        <button id="reset-btn" class="danger">全データを削除</button>
+        <button type="button" id="reset-btn" class="danger">全データを削除</button>
       </div>
     </details>
 

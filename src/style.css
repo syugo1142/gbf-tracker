@@ -82,11 +82,15 @@ input, select, button {
   border-radius: 4px;
   padding: 7px 10px;
 }
-/* 入力欄は背景の明るさで見分けられるので枠を消し、ボタンだけ枠を残す */
-button { border-color: var(--border); }
 input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--card); }
 
-button { cursor: pointer; background: var(--card); transition: background .15s, border-color .15s; }
+/* 入力欄は背景の明るさで見分けられるので枠を消し、ボタンだけ枠を残す */
+button {
+  cursor: pointer;
+  border-color: var(--border);
+  background: var(--card);
+  transition: background .15s, border-color .15s;
+}
 button:hover:not(:disabled) { border-color: var(--accent); }
 button[type="submit"], #export-btn {
   background: var(--accent);
