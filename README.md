@@ -51,22 +51,8 @@ https://syugo1142.github.io/gbf-tracker/ を開きます。
 - インフラ・CI/CD: GitHub Pages（画面のホスティング）、[Cloudflare Workers](https://developers.cloudflare.com/workers/)（同期サーバーのホスティング）、GitHub Actions（型チェック・テスト、画面と同期サーバーのデプロイ）、Wrangler（同期サーバーのテスト・デプロイ）
 
 ## 構成
-```mermaid
-flowchart TB
-  dev["開発者"]
-  actions["GitHub Actions<br>型チェック・テスト"]
-  pages["GitHub Pages<br>画面"]
-  browser["ブラウザ<br>パソコン・スマホ<br>データは localStorage"]
-  worker["Cloudflare Workers<br>同期サーバー"]
-  d1[("Cloudflare D1<br>同期のデータ")]
+![構成図（GitHub Actions・GitHub Pages・ブラウザ・Cloudflare Workers・Cloudflare D1 のつながり）](docs/architecture.svg)
 
-  dev -.->|"git push"| actions
-  actions -.->|"デプロイ"| pages
-  actions -.->|"デプロイ"| worker
-  pages -->|"読み込む"| browser
-  browser -->|"HTTPS"| worker
-  worker -->|"SQL"| d1
-```
 点線はデプロイの流れ、実線は使うときの通信です。
 
 - push すると、GitHub Actions が型チェックとテストを行ってからデプロイします。画面は毎回、同期サーバーは `server/` などを変えたときだけデプロイします

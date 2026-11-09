@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="580" viewBox="0 0 500 580" role="img" aria-labelledby="title desc">
+  <title id="title">構成図</title>
+  <desc id="desc">開発者が git push すると、GitHub Actions が型チェックとテストを行い、画面を GitHub Pages に、同期サーバーを Cloudflare Workers にデプロイする。ブラウザは GitHub Pages から画面を読み込み、データは localStorage に保存する。同期のときは HTTPS で Cloudflare Workers につなぎ、Cloudflare Workers は SQL で Cloudflare D1 にデータを保存する。</desc>
+  <!-- README の構成図。GitHub のスマホのアプリは Mermaid を図にしないので、SVG で描いている -->
+  <!-- 色はツールの画面と同じ。背景も塗り、GitHub の明るい表示でも暗い表示でも読めるようにする -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#adb5bd"/>
+    </marker>
+    <style>
+      text { font-family: Meiryo, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif; text-anchor: middle; }
+      .box { fill: #2b3035; stroke: #4fc3d6; stroke-width: 1.5; }
+      .name { fill: #dee2e6; font-size: 16px; font-weight: bold; }
+      .role { fill: #adb5bd; font-size: 14px; }
+      .line { stroke: #adb5bd; stroke-width: 1.5; fill: none; }
+      .deploy { stroke-dasharray: 6 4; }
+      .label { fill: #adb5bd; font-size: 13px; }
+      .start { text-anchor: start; }
+    </style>
+  </defs>
+
+  <rect width="500" height="580" rx="12" fill="#212529"/>
+
+  <!-- 矢印（点線はデプロイの流れ、実線は使うときの通信） -->
+  <path class="line deploy" d="M250,64 V102" marker-end="url(#arrow)"/>
+  <text class="label start" x="260" y="89">git push</text>
+  <path class="line deploy" d="M250,164 V200 M120,200 H380"/>
+  <path class="line deploy" d="M120,200 V242" marker-end="url(#arrow)"/>
+  <path class="line deploy" d="M380,200 V372" marker-end="url(#arrow)"/>
+  <text class="label start" x="260" y="187">デプロイ</text>
+  <path class="line" d="M120,304 V362" marker-end="url(#arrow)"/>
+  <text class="label start" x="130" y="338">読み込む</text>
+  <path class="line" d="M220,404 H278" marker-end="url(#arrow)"/>
+  <text class="label" x="250" y="396">HTTPS</text>
+  <path class="line" d="M380,434 V482" marker-end="url(#arrow)"/>
+  <text class="label start" x="390" y="463">SQL</text>
+
+  <!-- 開発者 -->
+  <rect class="box" x="180" y="20" width="140" height="44" rx="8"/>
+  <text class="name" x="250" y="47">開発者</text>
+
+  <!-- GitHub Actions -->
+  <rect class="box" x="155" y="104" width="190" height="60" rx="8"/>
+  <text class="name" x="250" y="130">GitHub Actions</text>
+  <text class="role" x="250" y="151">型チェック・テスト</text>
+
+  <!-- GitHub Pages -->
+  <rect class="box" x="20" y="244" width="200" height="60" rx="8"/>
+  <text class="name" x="120" y="270">GitHub Pages</text>
+  <text class="role" x="120" y="291">画面</text>
+
+  <!-- ブラウザ -->
+  <rect class="box" x="20" y="364" width="200" height="80" rx="8"/>
+  <text class="name" x="120" y="390">ブラウザ</text>
+  <text class="role" x="120" y="411">パソコン・スマホ</text>
+  <text class="role" x="120" y="431">データは localStorage</text>
+
+  <!-- Cloudflare Workers -->
+  <rect class="box" x="280" y="374" width="200" height="60" rx="8"/>
+  <text class="name" x="380" y="400">Cloudflare Workers</text>
+  <text class="role" x="380" y="421">同期サーバー</text>
+
+  <!-- Cloudflare D1（データベースなので筒の形） -->
+  <path class="box" d="M280,492 V546 A100,8 0 0 0 480,546 V492"/>
+  <ellipse class="box" cx="380" cy="492" rx="100" ry="8"/>
+  <text class="name" x="380" y="523">Cloudflare D1</text>
+  <text class="role" x="380" y="543">同期のデータ</text>
+</svg>
